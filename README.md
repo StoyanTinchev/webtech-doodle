@@ -1,2 +1,2 @@
 # web-tech
-Repo for FMI webtech course
+Repo for FMI webtech course project
