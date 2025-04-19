@@ -1,0 +1,37 @@
+# Base URL definition (optional; WebStorm supports variables)
+@host = http://localhost:3000
+
+### 1. Create a new meeting
+POST {{host}}/meetings
+Content-Type: application/json
+
+{
+  "title": "Team Sync",
+  "ownerName": "Alice",
+  "dateFrom": "2025-05-01",
+  "dateTo": "2025-05-05"
+}
+
+### 2. Get meeting details (including votes summary)
+GET {{host}}/meetings/1
+
+### 3. Add a time option to meeting #1
+POST {{host}}/meetings/1/options
+Content-Type: application/json
+
+{
+  "date": "2025-05-02",
+  "hour": 15
+}
+
+### 4. Cast a vote for option #1 in meeting #1
+POST {{host}}/meetings/1/votes
+Content-Type: application/json
+
+{
+  "optionId": 1,
+  "userName": "Bob"
+}
+
+### 5. Re-fetch meeting to see updated summary
+GET {{host}}/meetings/1
