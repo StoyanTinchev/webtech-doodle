@@ -1,14 +1,17 @@
 # web-tech FMI project - Vote for meeting (Doodle)
 
 - **Dependency Graph:**  
-```
-DB schema (Olya) ─► Server (Stoyan) ─► FE (Rossy + Lidia)
-     │                    ↙
-     │                  ↙
-     │                ↙ (authMiddleware used by Server)
-     │              ↙
-     └────► Auth (Dimitar)
-```
+  ```  
+             DB schema (Olya)  
+                    ↓  
+             Server API (Stoyan)  
+                ↙       ↘
+              ↙           ↘
+            ↙               ↘
+  DateTimePicker (Lidia)   VoteSummaryList (Rossy)  
+                         ↑  
+                    Auth (Dimitar) (uses authMiddleware by Server)
+  ```  
   This shows how schema → server → frontend and auth all plug together.  
 
 * *DB schema* (Olya) is the foundation.
