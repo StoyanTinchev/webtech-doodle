@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
@@ -6,7 +7,8 @@ import votesRouter from './routes/votes';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Parse incoming JSON payloads
+// Enable CORS and JSON body parsing
+app.use(cors());
 app.use(express.json());
 
 // Mount routers under /meetings
@@ -16,7 +18,7 @@ app.use('/meetings', votesRouter);
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', err.stack);
+    console.error('Unhandled error:', err.stack);
     res.status(500).json({ error: err.message });
 });
 

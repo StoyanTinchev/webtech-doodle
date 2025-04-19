@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 import * as meetingService from '../services/meetingService';
 
 export function addOption(req: Request, res: Response) {
-    const meetingId = parseInt(req.params.id, 10);
+    const meetingId = req.params.id;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     const { date, hour } = req.body;
     try {
         const option = meetingService.addTimeOption(meetingId, date, hour);
