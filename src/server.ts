@@ -1,11 +1,20 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Apply rate limiting to all requests to guard against abuse (e.g., max 100 requests per 15 minutes)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100,               // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use(limiter);
 
 // Enable CORS and JSON body parsing
 app.use(cors());

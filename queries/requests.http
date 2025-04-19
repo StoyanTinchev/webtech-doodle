@@ -1,4 +1,3 @@
-# Base URL definition (optional; WebStorm supports variables)
 @host = http://localhost:3000
 
 ### 1. Create a new meeting
@@ -12,26 +11,33 @@ Content-Type: application/json
   "dateTo": "2025-05-05"
 }
 
-### 2. Get meeting details (including votes summary)
-GET {{host}}/meetings/1
+> {% client.global.set("meetingId", response.body.id); %}
 
-### 3. Add a time option to meeting #1
-POST {{host}}/meetings/1/options
+### 2. Get meeting details
+GET {{host}}/meetings/{{meetingId}}
+
+### 3. Add a time option to meeting
+POST {{host}}/meetings/{{meetingId}}/options
 Content-Type: application/json
 
 {
   "date": "2025-05-02",
-  "hour": 15
+  "hour": 14
 }
 
-### 4. Cast a vote for option #1 in meeting #1
-POST {{host}}/meetings/1/votes
+> {% client.global.set("optionId", response.body.id); %}
+
+### 4. Cast a vote for that option
+POST {{host}}/meetings/{{meetingId}}/votes
 Content-Type: application/json
 
 {
-  "optionId": 1,
+  "optionId": "{{optionId}}",
   "userName": "Bob"
 }
 
-### 5. Re-fetch meeting to see updated summary
-GET {{host}}/meetings/1
+### 5. List all raw votes for the meeting
+GET {{host}}/meetings/{{meetingId}}/votes
+
+### 6. Get aggregated vote summary (sorted)
+GET {{host}}/meetings/{{meetingId}}/votes/summary

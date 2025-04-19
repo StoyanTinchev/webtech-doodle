@@ -7,12 +7,12 @@ const timeOptions = new Map<string, TimeOption>();
 const votes = new Map<string, Vote>();
 
 /** Create a new meeting and return it */
-export function createMeeting(
+export async function createMeeting(
     title: string,
     ownerName: string,
     dateFrom: string,
     dateTo: string
-): Meeting {
+): Promise<Meeting> {
     const id = uuidv4();
     const newMeeting: Meeting = {id, title, ownerName, dateFrom, dateTo, optionIds: []};
     meetings.set(id, newMeeting);
@@ -20,16 +20,16 @@ export function createMeeting(
 }
 
 /** Retrieve a meeting by its UUID */
-export function getMeetingById(meetingId: string): Meeting | undefined {
+export async function getMeetingById(meetingId: string): Promise<Meeting | undefined> {
     return meetings.get(meetingId);
 }
 
 /** Add a time option (date+hour) to a meeting, enforcing date range */
-export function addTimeOption(
+export async function addTimeOption(
     meetingId: string,
     date: string,
     hour: number
-): TimeOption {
+): Promise<TimeOption> {
     const meeting = meetings.get(meetingId);
     if (!meeting) throw new Error('Meeting not found');
 
@@ -39,7 +39,9 @@ export function addTimeOption(
 
     // Check if option date is within meeting range (inclusive)
     if (optionDate < startDate || optionDate > endDate) {
-        throw new Error(`Option date ${date} is outside the meeting range (${meeting.dateFrom} to ${meeting.dateTo})`);
+        throw new Error(
+            `Option date ${date} is outside the meeting range (${meeting.dateFrom} to ${meeting.dateTo})`
+        );
     }
 
     const id = uuidv4();
@@ -51,18 +53,22 @@ export function addTimeOption(
 }
 
 /** Cast a vote for a specific option, preventing duplicates */
-export function castVote(
+export async function castVote(
     meetingId: string,
     optionId: string,
     userName: string
-): Vote {
+): Promise<Vote> {
     const meeting = meetings.get(meetingId);
     if (!meeting) throw new Error('Meeting not found');
     if (!meeting.optionIds.includes(optionId)) throw new Error('Option not part of meeting');
 
     // Prevent duplicate votes by same user for same option
     for (const vote of votes.values()) {
-        if (vote.meetingId === meetingId && vote.optionId === optionId && vote.userName === userName) {
+        if (
+            vote.meetingId === meetingId &&
+            vote.optionId === optionId &&
+            vote.userName === userName
+        ) {
             throw new Error('User has already voted for this option');
         }
     }
@@ -74,12 +80,14 @@ export function castVote(
 }
 
 /** Get all votes for a meeting */
-export function getVotesByMeeting(meetingId: string): Vote[] {
+export async function getVotesByMeeting(meetingId: string): Promise<Vote[]> {
     return Array.from(votes.values()).filter(v => v.meetingId === meetingId);
 }
 
 /** Summarize votes per option (including zero-vote options) and sort descending */
-export function getVotesSummary(meetingId: string) {
+export async function getVotesSummary(
+    meetingId: string
+): Promise<{ option: TimeOption; count: number }[]> {
     const meeting = meetings.get(meetingId);
     if (!meeting) throw new Error('Meeting not found');
 
@@ -87,18 +95,14 @@ export function getVotesSummary(meetingId: string) {
     const summaryMap = new Map<string, { option: TimeOption; count: number }>();
     meeting.optionIds.forEach(optId => {
         const option = timeOptions.get(optId);
-        if (option) {
-            summaryMap.set(optId, {option, count: 0});
-        }
+        if (option) summaryMap.set(optId, {option, count: 0});
     });
 
     // Tally votes into the summaryMap
     for (const vote of votes.values()) {
         if (vote.meetingId !== meetingId) continue;
         const entry = summaryMap.get(vote.optionId);
-        if (entry) {
-            entry.count++;
-        }
+        if (entry) entry.count++;
     }
 
     // Convert to array and sort descending by vote count
