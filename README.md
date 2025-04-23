@@ -8,7 +8,7 @@
                 ↙       ↘
               ↙           ↘
             ↙               ↘
-  DateTimePicker (Lidia)   VoteSummaryList (Rossy)  
+  DateTimePicker (Rossy)   VoteSummaryList (Lidia)  
                          ↑  
                     Auth (Dimitar) (uses authMiddleware by Server)
   ```  
