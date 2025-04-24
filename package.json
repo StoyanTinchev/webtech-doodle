@@ -28,6 +28,7 @@
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "mongoose": "^6.3.2",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "ts-node": "^10.7.0"
   }
 }
