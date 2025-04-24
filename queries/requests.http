@@ -1,7 +1,7 @@
 @host = http://localhost:3000
 
 ### 1. Create a new meeting
-POST {{host}}/meetings
+POST {{host}}/api/meetings
 Content-Type: application/json
 
 {
@@ -14,10 +14,10 @@ Content-Type: application/json
 > {% client.global.set("meetingId", response.body.id); %}
 
 ### 2. Get meeting details
-GET {{host}}/meetings/{{meetingId}}
+GET {{host}}/api/meetings/{{meetingId}}
 
 ### 3. Add a time option to meeting
-POST {{host}}/meetings/{{meetingId}}/options
+POST {{host}}/api/meetings/{{meetingId}}/options
 Content-Type: application/json
 
 {
@@ -28,7 +28,7 @@ Content-Type: application/json
 > {% client.global.set("optionId", response.body.id); %}
 
 ### 4. Cast a vote for that option
-POST {{host}}/meetings/{{meetingId}}/votes
+POST {{host}}/api/meetings/{{meetingId}}/votes
 Content-Type: application/json
 
 {
@@ -37,7 +37,7 @@ Content-Type: application/json
 }
 
 ### 5. List all raw votes for the meeting
-GET {{host}}/meetings/{{meetingId}}/votes
+GET {{host}}/api/meetings/{{meetingId}}/votes
 
 ### 6. Get aggregated vote summary (sorted)
-GET {{host}}/meetings/{{meetingId}}/votes/summary
+GET {{host}}/api/meetings/{{meetingId}}/votes/summary

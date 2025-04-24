@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { body, param } from 'express-validator';
+import {Router} from 'express';
+import {body, param} from 'express-validator';
 import * as optionCtrl from '../controllers/optionCtrl';
 
 const router = Router();
@@ -9,7 +9,7 @@ router.post(
     [
         param('id').isUUID(),
         body('date').isISO8601(),
-        body('hour').isInt({ min: 0, max: 23 })
+        body('hour').isInt({min: 0, max: 23})
     ],
     optionCtrl.addOption
 );

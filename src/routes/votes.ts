@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { body, param } from 'express-validator';
+import {Router} from 'express';
+import {body, param} from 'express-validator';
 import * as voteCtrl from '../controllers/voteCtrl';
 
 const router = Router();
