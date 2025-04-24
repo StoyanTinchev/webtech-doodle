@@ -1,4 +1,4 @@
-@host = http://localhost:3000
+@host = https://webtech-doodle-f3165275f403.herokuapp.com
 
 ### 1. Create a new meeting
 POST {{host}}/api/meetings
