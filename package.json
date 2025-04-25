@@ -1,10 +1,9 @@
 {
+  "name": "webtech-doodle",
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.ts",
-    "heroku-postbuild": "npm run build"
+    "start": "ts-node server.ts"
   },
   "engines": {
     "node": "22.x"
@@ -21,6 +20,8 @@
   "homepage": "https://github.com/StoyanTinchev/webtech-doodle#readme",
   "description": "",
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
@@ -28,7 +29,8 @@
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "mongoose": "^6.3.2",
-    "uuid": "^11.1.0",
-    "ts-node": "^10.7.0"
+    "ts-node": "^10.7.0",
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0"
   }
 }

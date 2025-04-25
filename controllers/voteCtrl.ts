@@ -1,11 +1,14 @@
-import {Request, Response} from 'express';
+import {Request, Response, NextFunction} from 'express';
 import {validationResult} from 'express-validator';
 import * as meetingService from '../services/meetingService';
 
-export async function castVote(req: Request, res: Response) {
+export async function castVote(req: Request, res: Response, next: NextFunction) {
     const meetingId = req.params.id;
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({errors: errors.array()});
+    if (!errors.isEmpty()) {
+        res.status(400).json({errors: errors.array()});
+        return;
+    }
 
     const {optionId, userName} = req.body;
     try {
@@ -16,7 +19,7 @@ export async function castVote(req: Request, res: Response) {
     }
 }
 
-export async function listVotes(req: Request, res: Response) {
+export async function listVotes(req: Request, res: Response, next: NextFunction) {
     const meetingId = req.params.id;
     const allVotes = await meetingService.getVotesByMeeting(meetingId);
     res.json(allVotes);
