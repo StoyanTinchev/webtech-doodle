@@ -1,0 +1,26 @@
+.optionCreatorContainer
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;    
+
+}
+.optionCreatorContainer>div
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content:center;
+    gap: 30px;    
+}
+.optionCreatorContainer div 
+{
+    display: flex;
+}
+.optionCreatorContainer div input
+{
+    text-align: center;
+    padding: 3px;
+    margin-left: 5px;
+}

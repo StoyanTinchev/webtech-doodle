@@ -1,0 +1,9 @@
+.MeetingCreator {
+  text-align: center;
+  background-color: rgb(73, 61, 158);
+  height: 80vh;
+  width: 70vw;
+  border-radius: 30px;
+  display: flex;
+  justify-content: space-around;
+}
