@@ -1,5 +1,5 @@
-import {connectDB} from '../db/index';
-import User from '../models/user';
+import {connectDB} from '../../db/index';
+import User from '../../models/user';
 
 const createUser = async() => {
     await connectDB();

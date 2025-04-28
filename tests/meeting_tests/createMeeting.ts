@@ -1,5 +1,5 @@
-import {connectDB} from '../db/index';
-import Meeting from '../models/meeting';
+import {connectDB} from '../../db/index';
+import Meeting from '../../models/meeting';
 
 const createMeeting = async () => {
     await connectDB();
