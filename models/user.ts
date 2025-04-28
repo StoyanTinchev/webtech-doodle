@@ -1,23 +1,36 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-interface IUser extends Document {
+export interface User {
+  id: string;
   name: string;
   email: string;
   passwordHash: string;
   registrationDate: Date;
 }
 
-const userSchema: Schema = new Schema(
+const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     registrationDate: { type: Date, default: Date.now },
   },
-  { timestamps: true,
+  {
     versionKey: false,
-  });
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
+  }
+);
 
-const User = mongoose.model<IUser>('User', userSchema);
+userSchema.virtual('id').get(function (this: any) {
+  return this._id.toHexString();
+});
+
+const User = mongoose.model<User & Document>('User', userSchema);
 
 export default User;

@@ -5,16 +5,17 @@ const updateTimeOption = async () => {
     await connectDB();
 
     try {
-        const option = await TimeOption.findOne({ hour: 14 }); 
+        const option = await TimeOption.findOne({ hour: 14 });
+
         if (!option) {
-            console.error('TimeOption not found!');
+            console.log('No TimeOption found with hour 14.');
             return;
         }
 
-        option.hour = 16; 
-        const updatedOption = await option.save();
+        option.hour = 16;
 
-        console.log('TimeOption updated:', updatedOption);
+        const updatedOption = await option.save();
+        console.log('TimeOption updated successfully:', updatedOption);
     } catch (error) {
         console.error('Error updating TimeOption:', error);
     }

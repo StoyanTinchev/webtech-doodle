@@ -1,27 +1,38 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-
-export interface IMeeting {
-    title: string;
-    ownerName: string;
-    dateFrom: string;
-    dateTo: string;
-    optionIds: mongoose.Schema.Types.ObjectId[]; 
+export interface Meeting {
+  id: string;
+  title: string;
+  ownerName: string;
+  dateFrom: string;
+  dateTo: string;
+  optionIds: string[];
 }
 
-const meetingSchema: Schema = new Schema({
+const meetingSchema = new Schema(
+  {
     title: { type: String, required: true },
     ownerName: { type: String, required: true },
-    dateFrom: { type: Date, required: true },
-    dateTo: { type: Date, required: true },
-    optionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TimeOption' }], 
-},
-{ 
-  versionKey: false,
+    dateFrom: { type: String, required: true },
+    dateTo: { type: String, required: true },
+    optionIds: [{ type: String, required: true }],
+  },
+  {
+    versionKey: false,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
+  }
+);
+
+// виртуално поле 'id'
+meetingSchema.virtual('id').get(function (this: any) {
+  return this._id.toHexString();
 });
 
-
-const Meeting = mongoose.model<IMeeting & Document>('Meeting', meetingSchema);
+const Meeting = mongoose.model<Meeting & Document>('Meeting', meetingSchema);
 
 export default Meeting;
-

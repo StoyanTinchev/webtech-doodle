@@ -1,20 +1,33 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IVote {
-    meetingId: mongoose.Schema.Types.ObjectId; 
-    optionId: mongoose.Schema.Types.ObjectId;  
-    userName: string;
+export interface Vote {
+  id: string;
+  meetingId: string;
+  optionId: string;
+  userName: string;
 }
 
-const voteSchema: Schema = new Schema({
-    meetingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Meeting', required: true },
-    optionId: { type: mongoose.Schema.Types.ObjectId, ref: 'TimeOption', required: true },
+const voteSchema = new Schema(
+  {
+    meetingId: { type: String, required: true },
+    optionId: { type: String, required: true },
     userName: { type: String, required: true },
-},
-{ 
-  versionKey: false,
+  },
+  {
+    versionKey: false,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
+  }
+);
+
+voteSchema.virtual('id').get(function (this: any) {
+  return this._id.toHexString();
 });
 
-const Vote = mongoose.model<IVote & Document>('Vote', voteSchema);
+const Vote = mongoose.model<Vote & Document>('Vote', voteSchema);
 
 export default Vote;

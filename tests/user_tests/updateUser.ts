@@ -1,24 +1,24 @@
-import {connectDB} from '../../db/index';
+import { connectDB } from '../../db/index';
 import User from '../../models/user';
 
-const updateUser = async() => {
+const updateUser = async () => {
     await connectDB();
 
-    try{
+    try {
         const user = await User.findOneAndUpdate(
-            {email: 'olya@email.com'},
-            {name: 'Olya At'},
-            {new: true, runValidators: true}
+            { email: 'olya@email.com' },  
+            { name: 'Olya At' },  
+            { new: true, runValidators: true }  
         );
 
-        if(user){
+        if (user) {
             console.log('User updated: ', user);
         } else {
             console.log('No user found to update');
         }
-    }catch(error){
-        console.log('Error updating user: ', error);
+    } catch (error) {
+        console.error('Error updating user: ', error);
     }
-}
+};
 
 updateUser();

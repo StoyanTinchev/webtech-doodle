@@ -1,41 +1,36 @@
 import { connectDB } from '../../db/index';
 import Vote from '../../models/vote';
 import TimeOption from '../../models/timeOption';
-import mongoose from 'mongoose';  
+import Meeting from '../../models/meeting';
 
 const updateVote = async () => {
     await connectDB();
 
     try {
-      
-        const vote = await Vote.findOne({ userName: 'Olya Atanasova' });
+        const meeting = await Meeting.findOne({ title: 'Team Sync' });
+        if (!meeting) {
+            console.error('Meeting not found.');
+            return;
+        }
 
+        const newTimeOption = await TimeOption.findOne({ meetingId: meeting.id, hour: 16 });
+        if (!newTimeOption) {
+            console.error('New TimeOption not found.');
+            return;
+        }
+
+        const vote = await Vote.findOne({ userName: 'Olya Atanasova', meetingId: meeting.id });
         if (!vote) {
-            console.error('Vote not found!');
+            console.log('Vote not found for updating.');
             return;
         }
-        const newOption = await TimeOption.findOne({ hour: 14 });
 
-        if (!newOption) {
-            console.error('New TimeOption not found!');
-            return;
-        }
-        const updatedVote = await Vote.findByIdAndUpdate(
-            vote._id, 
-            { optionId: newOption._id }, 
-            { new: true } 
-        );
+        vote.optionId = newTimeOption.id; 
+        const updatedVote = await vote.save();
+        console.log('Vote updated:', updatedVote);
 
-        if (updatedVote) {
-            console.log('Vote updated:', updatedVote);
-        } else {
-            console.error('Error updating vote: Vote not found');
-        }
     } catch (error) {
         console.error('Error updating vote:', error);
-    } finally {
-        await mongoose.disconnect();
-        console.log('MongoDB connection closed');
     }
 };
 

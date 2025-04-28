@@ -5,16 +5,21 @@ import Meeting from '../../models/meeting';
 const findTimeOptions = async () => {
     await connectDB();
 
-    const meeting = await Meeting.findOne({ title: 'Team Sync' });
-
-    if (!meeting) {
-        console.error('Meeting not found!');
-        return;
-    }
-
     try {
+        const meeting = await Meeting.findOne({ title: 'Team Sync' });
+
+        if (!meeting) {
+            console.log('No meeting found with the given title.');
+            return;
+        }
+
         const options = await TimeOption.find({ meetingId: meeting._id });
-        console.log('TimeOptions for meeting:', options);
+
+        if (options.length > 0) {
+            console.log('TimeOptions for the meeting:', options);
+        } else {
+            console.log('No TimeOptions found for this meeting.');
+        }
     } catch (error) {
         console.error('Error finding TimeOptions:', error);
     }
