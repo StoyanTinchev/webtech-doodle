@@ -28,7 +28,6 @@ const meetingSchema = new Schema(
   }
 );
 
-// виртуално поле 'id'
 meetingSchema.virtual('id').get(function (this: any) {
   return this._id.toHexString();
 });
