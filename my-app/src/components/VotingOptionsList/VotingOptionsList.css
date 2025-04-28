@@ -1,0 +1,47 @@
+
+.voting-option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #7579e7; 
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(117, 121, 231, 0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.voting-option-card:hover {
+  background-color: #a3d8f4;
+  transform: translateY(-2px);
+}
+
+.voting-option-content {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  gap: 1rem;
+}
+
+.voting-option-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #7579e7; 
+}
+
+.voting-option-time {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #7579e7;
+}
+
+.voting-option-votes {
+  background-color: #9ab3f5;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: center;
+}
