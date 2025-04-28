@@ -13,4 +13,14 @@ router.post(
     ],
     optionCtrl.addOption
 );
+
+router.delete(
+    '/:id/options/:optionId',
+    [
+        param('id').isUUID(),
+        param('optionId').isUUID()
+    ],
+    optionCtrl.deleteOption
+);
+
 export default router;

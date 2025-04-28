@@ -1,4 +1,5 @@
-@host = https://webtech-doodle-f3165275f403.herokuapp.com
+@host = http://localhost:3000
+@heroku = https://webtech-doodle-f3165275f403.herokuapp.com
 
 ### 1. Create a new meeting
 POST {{host}}/api/meetings
@@ -27,7 +28,10 @@ Content-Type: application/json
 
 > {% client.global.set("optionId", response.body.id); %}
 
-### 4. Cast a vote for that option
+### 4. Delete a time option from meeting
+DELETE {{host}}/api/meetings/{{meetingId}}/options/{{optionId}}
+
+### 5. Cast a vote for that option
 POST {{host}}/api/meetings/{{meetingId}}/votes
 Content-Type: application/json
 
@@ -36,8 +40,8 @@ Content-Type: application/json
   "userName": "Bob"
 }
 
-### 5. List all raw votes for the meeting
+### 6. List all raw votes for the meeting
 GET {{host}}/api/meetings/{{meetingId}}/votes
 
-### 6. Get aggregated vote summary (sorted)
+### 7. Get aggregated vote summary (sorted)
 GET {{host}}/api/meetings/{{meetingId}}/votes/summary

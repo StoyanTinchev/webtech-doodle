@@ -52,6 +52,33 @@ export async function addTimeOption(
     return newOption;
 }
 
+/** Delete a time option (and any votes for it) */
+export async function deleteTimeOption(
+    meetingId: string,
+    optionId: string,
+): Promise<void> {
+    const meeting = meetings.get(meetingId);
+    if (!meeting) throw new Error('Meeting not found');
+    if (!meeting.optionIds.includes(optionId)) throw new Error('Option not part of meeting');
+
+    const option = timeOptions.get(optionId);
+    if (!option) throw new Error('Option not found');
+
+    // remove the option from the meeting
+    meeting.optionIds = meeting.optionIds.filter(id => id !== optionId);
+    meetings.set(meetingId, meeting);
+
+    // delete the TimeOption itself
+    timeOptions.delete(optionId);
+
+    // delete any votes tied to this option
+    for (const [voteId, vote] of votes.entries()) {
+        if (vote.meetingId === meetingId && vote.optionId === optionId) {
+            votes.delete(voteId);
+        }
+    }
+}
+
 /** Cast a vote for a specific option, preventing duplicates */
 export async function castVote(
     meetingId: string,

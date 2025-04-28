@@ -18,3 +18,20 @@ export async function addOption(req: Request, res: Response, next: NextFunction)
         res.status(400).json({error: err.message});
     }
 }
+
+export async function deleteOption(req: Request, res: Response, next: NextFunction) {
+    const meetingId = req.params.id;
+    const optionId = req.params.optionId;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({errors: errors.array()});
+        return;
+    }
+
+    try {
+        await meetingService.deleteTimeOption(meetingId, optionId);
+        res.status(204).send();
+    } catch (err: any) {
+        res.status(400).json({error: err.message});
+    }
+}
