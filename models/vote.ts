@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface Vote {
+export interface IVote {
   id: string;
   meetingId: string;
   optionId: string;
@@ -28,6 +28,6 @@ voteSchema.virtual('id').get(function (this: any) {
   return this._id.toHexString();
 });
 
-const Vote = mongoose.model<Vote & Document>('Vote', voteSchema);
+const Vote = mongoose.model<IVote & Document>('Vote', voteSchema);
 
 export default Vote;

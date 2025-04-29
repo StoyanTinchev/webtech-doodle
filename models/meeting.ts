@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface Meeting {
+export interface IMeeting {
   id: string;
   title: string;
   ownerName: string;
@@ -32,6 +32,6 @@ meetingSchema.virtual('id').get(function (this: any) {
   return this._id.toHexString();
 });
 
-const Meeting = mongoose.model<Meeting & Document>('Meeting', meetingSchema);
+const Meeting = mongoose.model<IMeeting & Document>('Meeting', meetingSchema);
 
 export default Meeting;

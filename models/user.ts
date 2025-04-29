@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface User {
+export interface IUser {
   id: string;
   name: string;
   email: string;
@@ -31,6 +31,6 @@ userSchema.virtual('id').get(function (this: any) {
   return this._id.toHexString();
 });
 
-const User = mongoose.model<User & Document>('User', userSchema);
+const User = mongoose.model<IUser & Document>('User', userSchema);
 
 export default User;

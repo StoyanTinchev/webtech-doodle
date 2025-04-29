@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface TimeOption {
+export interface ITimeOption {
   id: string;
   meetingId: string;
   date: string;
@@ -28,6 +28,6 @@ timeOptionSchema.virtual('id').get(function (this: any) {
   return this._id.toHexString();
 });
 
-const TimeOption = mongoose.model<TimeOption & Document>('TimeOption', timeOptionSchema);
+const TimeOption = mongoose.model<ITimeOption & Document>('TimeOption', timeOptionSchema);
 
 export default TimeOption;
