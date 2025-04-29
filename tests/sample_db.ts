@@ -8,16 +8,22 @@ const seedDatabase = async () => {
   await connectDB();
 
   try {
+    const existingMeeting = await Meeting.findOne({ title: 'Project Meeting' });
+    if (existingMeeting) {
+      console.log('Meeting with this title already exists:', existingMeeting);
+      return;
+    }
+    
     const meeting = new Meeting({
-      title: 'Project Kickoff',
-      ownerName: 'Ivan Petrov',
+      title: 'Project Meeting',
+      ownerName: 'Lidiya Yavorova',
       dateFrom: '2025-06-01T00:00:00Z',
       dateTo: '2025-06-05T00:00:00Z',
       optionIds: [],
     });
 
     const savedMeeting = await meeting.save();
-    console.log('Meeting created:', savedMeeting.id);
+    console.log('Meeting created:', savedMeeting);
 
     const timeOption1 = new TimeOption({
       meetingId: savedMeeting.id,
@@ -33,20 +39,26 @@ const seedDatabase = async () => {
 
     const savedTimeOption1 = await timeOption1.save();
     const savedTimeOption2 = await timeOption2.save();
-    console.log('TimeOptions created:', savedTimeOption1.id, savedTimeOption2.id);
+    console.log('TimeOptions created: ', savedTimeOption1, savedTimeOption2);
 
     savedMeeting.optionIds.push(savedTimeOption1.id, savedTimeOption2.id);
     await savedMeeting.save();
-    console.log('Meeting updated with options.');
+    console.log('Meeting updated with new options.');
+
+    const existingUser = await User.findOne({ email: 'lidiya@email.com' });
+    if (existingUser) {
+      console.log('User with this email already exists:', existingUser);
+      return;
+    }
 
     const user = new User({
-      name: 'Ivan Petrov',
-      email: 'ivan@example.com',
+      name: 'Lidiya Yavorova',
+      email: 'lidiya@email.com',
       passwordHash: 'supersecurepassword',
     });
 
     const savedUser = await user.save();
-    console.log('User created:', savedUser.id);
+    console.log('User created:', savedUser);
 
     const vote = new Vote({
       meetingId: savedMeeting.id,
@@ -55,12 +67,12 @@ const seedDatabase = async () => {
     });
 
     const savedVote = await vote.save();
-    console.log('Vote created:', savedVote.id);
+    console.log('Vote created:', savedVote);
 
     console.log('Database seeded successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);
-  }finally{
+  } finally {
     await disconnectDB();
   }
 };
