@@ -1,4 +1,4 @@
-import { connectDB } from '../db/index';
+import { connectDB, disconnectDB } from '../db/index';
 import Meeting from '../models/meeting';
 import TimeOption from '../models/timeOption';
 import User from '../models/user';
@@ -60,6 +60,8 @@ const seedDatabase = async () => {
     console.log('Database seeded successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);
+  }finally{
+    await disconnectDB();
   }
 };
 
