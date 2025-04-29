@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import User from '../../models/user';
 
 const deleteUser = async () => {
@@ -14,6 +14,8 @@ const deleteUser = async () => {
         }
     } catch (error) {
         console.error('Error deleting user: ', error);
+    }finally{
+        await disconnectDB();
     }
 };
 

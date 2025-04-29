@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import User from '../../models/user';
 
 const updateUser = async () => {
@@ -18,6 +18,8 @@ const updateUser = async () => {
         }
     } catch (error) {
         console.error('Error updating user: ', error);
+    }finally {
+        await disconnectDB();
     }
 };
 

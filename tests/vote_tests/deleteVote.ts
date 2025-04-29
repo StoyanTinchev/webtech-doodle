@@ -1,11 +1,11 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Vote from '../../models/vote';
 
 const deleteVote = async () => {
     await connectDB();
 
     try {
-        const vote = await Vote.findOne({ userName: 'Olya A.' });
+        const vote = await Vote.findOne({ userName: 'Olya Atanasova' });
         if (!vote) {
             console.log('Vote not found for deletion.');
             return;
@@ -15,6 +15,8 @@ const deleteVote = async () => {
         console.log('Vote deleted successfully.');
     } catch (error) {
         console.error('Error deleting vote:', error);
+    }finally {
+        await disconnectDB();
     }
 };
 

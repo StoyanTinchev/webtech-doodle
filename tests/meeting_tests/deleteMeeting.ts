@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Meeting from '../../models/meeting';
 
 const deleteMeeting = async () => {
@@ -22,7 +22,9 @@ const deleteMeeting = async () => {
         });
 
     } catch (error) {
-        console.error('Error deleting meeting: ', error.message || error);
+        console.error('Error deleting meeting: ', error);
+    } finally {
+        await disconnectDB();
     }
 };
 

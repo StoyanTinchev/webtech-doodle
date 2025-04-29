@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Vote from '../../models/vote';
 
 const findVote = async () => {
@@ -13,6 +13,8 @@ const findVote = async () => {
         }
     } catch (error) {
         console.error('Error finding vote:', error);
+    }finally {
+        await disconnectDB();
     }
 };
 

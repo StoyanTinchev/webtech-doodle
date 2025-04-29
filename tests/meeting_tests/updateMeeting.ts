@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Meeting from '../../models/meeting';
 
 const updateMeeting = async () => {
@@ -7,12 +7,14 @@ const updateMeeting = async () => {
     try {
         const updatedMeeting = await Meeting.findOneAndUpdate(
             { title: 'Team Sync' },  
-            { title: 'Team Weakly Sync' },  
+            { title: 'Team Weakly Sync',
+              ownerName: 'Olya At',
+            },  
             { new: true } 
         );
 
         if (!updatedMeeting) {
-            console.log('No meeting found to update with title "Team Sync"');
+            console.log('No meeting found to update.');
             return;  
         }
 
@@ -26,7 +28,9 @@ const updateMeeting = async () => {
         });
 
     } catch (error) {
-        console.error('Error updating meeting: ', error.message || error);
+        console.error('Error updating meeting: ', error);
+    }finally {
+        await disconnectDB();
     }
 };
 

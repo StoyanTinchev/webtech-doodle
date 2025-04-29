@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import TimeOption from '../../models/timeOption';
 import Meeting from '../../models/meeting';
 
@@ -19,7 +19,7 @@ const createTimeOption = async () => {
         });
 
         if (existingOption) {
-            console.log('Time option already exists for this meeting, date, and hour.');
+            console.log('Time option already exists.');
             return;
         }
 
@@ -33,6 +33,8 @@ const createTimeOption = async () => {
         console.log('Time option created: ', savedTimeOption);
     } catch (error) {
         console.error('Error creating new time option:', error);
+    } finally{
+        await disconnectDB();
     }
 };
 

@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import TimeOption from '../../models/timeOption';
 
 const updateTimeOption = async () => {
@@ -8,16 +8,18 @@ const updateTimeOption = async () => {
         const option = await TimeOption.findOne({ hour: 14 });
 
         if (!option) {
-            console.log('No TimeOption found with hour 14.');
+            console.log('No TimeOption found.');
             return;
         }
 
-        option.hour = 16;
+        option.hour = 18;
 
         const updatedOption = await option.save();
         console.log('TimeOption updated successfully:', updatedOption);
     } catch (error) {
         console.error('Error updating TimeOption:', error);
+    }finally {
+        await disconnectDB();
     }
 };
 

@@ -1,11 +1,11 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import TimeOption from '../../models/timeOption';
 
 const deleteTimeOption = async () => {
     await connectDB();
 
     try {
-        const option = await TimeOption.findOne({ hour: 16 });
+        const option = await TimeOption.findOne({ hour: 18 });
         if (!option) {
             console.log('No TimeOption found with this hour.');
             return;
@@ -20,6 +20,8 @@ const deleteTimeOption = async () => {
         }
     } catch (error) {
         console.error('Error deleting TimeOption:', error);
+    } finally{
+        await disconnectDB();
     }
 };
 

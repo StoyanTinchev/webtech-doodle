@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Meeting from '../../models/meeting';
 
 const findMeeting = async () => {
@@ -8,7 +8,7 @@ const findMeeting = async () => {
         const meeting = await Meeting.findOne({ title: 'Team Sync' });
 
         if (!meeting) {
-            console.log('No meeting found with the title "Team Sync"');
+            console.log('No meeting found with this title.');
             return;  
         }
 
@@ -22,7 +22,9 @@ const findMeeting = async () => {
         });
 
     } catch (error) {
-        console.error('Error finding meeting: ', error.message || error);
+        console.error('Error finding meeting: ', error);
+    } finally{
+        await disconnectDB();
     }
 };
 

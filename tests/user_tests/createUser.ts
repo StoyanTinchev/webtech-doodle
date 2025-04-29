@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import User from '../../models/user';
 
 const createUser = async () => {
@@ -21,6 +21,8 @@ const createUser = async () => {
         console.log('User created: ', savedUser);
     } catch (error) {
         console.error('Error creating user: ', error);
+    } finally {
+        await disconnectDB();
     }
 };
 

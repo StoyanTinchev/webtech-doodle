@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Vote from '../../models/vote';
 import Meeting from '../../models/meeting';
 import TimeOption from '../../models/timeOption';
@@ -29,6 +29,8 @@ const createVote = async () => {
         console.log('Vote created:', savedVote);
     } catch (error) {
         console.error('Error creating vote:', error);
+    }finally{
+        await disconnectDB();
     }
 };
 

@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import User from '../../models/user';
 
 const findUser = async () => {
@@ -14,6 +14,8 @@ const findUser = async () => {
         }
     } catch (error) {
         console.error('Error finding user: ', error);
+    }finally{
+        await disconnectDB();
     }
 };
 

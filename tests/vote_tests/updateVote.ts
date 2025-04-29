@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Vote from '../../models/vote';
 import TimeOption from '../../models/timeOption';
 import Meeting from '../../models/meeting';
@@ -13,7 +13,7 @@ const updateVote = async () => {
             return;
         }
 
-        const newTimeOption = await TimeOption.findOne({ meetingId: meeting.id, hour: 16 });
+        const newTimeOption = await TimeOption.findOne({ meetingId: meeting.id, hour: 14 });
         if (!newTimeOption) {
             console.error('New TimeOption not found.');
             return;
@@ -31,6 +31,8 @@ const updateVote = async () => {
 
     } catch (error) {
         console.error('Error updating vote:', error);
+    }finally{
+        await disconnectDB();
     }
 };
 

@@ -1,4 +1,4 @@
-import { connectDB } from '../../db/index';
+import { connectDB, disconnectDB } from '../../db/index';
 import Meeting from '../../models/meeting';
 
 const createMeeting = async () => {
@@ -26,7 +26,9 @@ const createMeeting = async () => {
         console.log('Meeting created: ', savedMeeting);
 
     } catch (error) {
-        console.error('Error creating meeting: ', error.message || error);
+        console.error('Error creating meeting: ', error);
+    }finally {
+        await disconnectDB();
     }
 };
 
