@@ -8,6 +8,8 @@ import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
 import './App.css';
 
+
+// MAIN
 function App() {
   return (
     <AuthProvider>

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+// HTTP requests to BE
 import axios from 'axios';
 
 interface User {
@@ -17,7 +18,7 @@ interface AuthContextType {
   logout: () => void;
   error: string | null;
 }
-
+// съхранява пропъртитата на контекста
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
@@ -29,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   error: null
 });
 
+// property and function, so we can adjust the state in the component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -36,10 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Configure axios defaults
+  // Аxios defaults
   axios.defaults.baseURL = 'http://localhost:5000/api';
   
-  // Set auth token
+  // След като се зареди компонента и token-a, axios ще добави token-a в headers на всяка заявка
+  // и ще го изтрие, ако token-a е null
+  // Ако стойността на токен се промени се изпълнява 2 х useEffect
+  
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['x-auth-token'] = token;
@@ -48,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [token]);
 
-  // Load user if token exists
+  // 2. useEffect - опитваме се да заредим user-a, ако токен-a е наличен
   useEffect(() => {
     const loadUser = async () => {
       if (!token) {
@@ -76,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     try {
       const res = await axios.post('/auth/register', { username, email, password });
-      
+      // demo localstorage
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
@@ -93,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       const res = await axios.post('/auth/login', { email, password });
-      
+      //dict - demo
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
@@ -108,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Logout user
   const logout = () => {
+    // demo
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);

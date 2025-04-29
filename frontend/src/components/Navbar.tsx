@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
       </li>
       <li>
         <a href="#!" onClick={(e) => {
-          //e.preventDefault();
+          e.preventDefault();
           logout();
         }}>
           Sign Out

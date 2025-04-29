@@ -13,12 +13,12 @@ const Register: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const { register, isAuthenticated, error } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate]); // проверка на isAuthenticated и navigate
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

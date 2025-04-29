@@ -45,7 +45,6 @@ ul {
   margin-bottom: 3rem;
 }
 
-/* Navbar */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -75,7 +74,6 @@ ul {
   text-decoration: none;
 }
 
-/* Forms */
 .form-container {
   max-width: 500px;
   margin: 2rem auto;
@@ -161,7 +159,6 @@ ul {
   color: #fff;
 }
 
-/* Dashboard */
 .dashboard {
   text-align: center;
 }

@@ -1,12 +1,9 @@
-// This is the entry point for the backend server using Express.js
-// and TypeScript. It sets up the server, middleware, and routes.
-// It also includes CORS support and JSON body parsing.
-// The server listens on port 5000.
-
 import express from 'express';
+// enables the front end to "be" with the same origin as the backend server
 import cors from 'cors';
 import authRoutes from './routes/auth';
 
+// Заложен дефолтен порт
 const app = express();
 const PORT = 5000;
 
@@ -14,12 +11,12 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-
+// Health check
 app.get('/', (req, res) => {
   res.send('Auth API is running');
 });
 
-// Routes
+// Routes - ще използвам authRoutes за аутентикация
 app.use('/api/auth', authRoutes);
 
 // Start server
