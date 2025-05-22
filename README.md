@@ -25,3 +25,8 @@ View our kanban project page: [webtech-doodle kanban](https://github.com/users/S
 View our milestones page: [webtech-doodle milestones](https://github.com/StoyanTinchev/webtech-doodle/milestones)
 
 Issues page: [webtech-doodle issues](https://github.com/StoyanTinchev/webtech-doodle/issues)
+
+<br>
+
+### BE collection:
+[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/18232984-f5e2fabc-ee21-49b0-813b-09b8604789c3?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D18232984-f5e2fabc-ee21-49b0-813b-09b8604789c3%26entityType%3Dcollection%26workspaceId%3D88307bb5-6f2e-4592-92ba-2ee82e613e21)
