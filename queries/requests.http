@@ -1,13 +1,15 @@
-@host = http://localhost:3000
+@localhost = http://localhost:3000
 @heroku = https://webtech-doodle-f3165275f403.herokuapp.com
+
+@host = {{localhost}}
 
 ### 1. Create a new meeting
 POST {{host}}/api/meetings
 Content-Type: application/json
 
 {
-  "title": "Team Sync",
-  "ownerName": "Alice",
+  "title": "New meet",
+  "ownerName": "Stoyan",
   "dateFrom": "2025-05-01",
   "dateTo": "2025-05-05"
 }

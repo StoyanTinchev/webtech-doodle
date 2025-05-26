@@ -1,27 +1,21 @@
-import {v4 as uuidv4} from 'uuid';
-import {Meeting, TimeOption, Vote} from '../models/types';
+import Meeting, {IMeeting} from "../models/meeting";
+import TimeOption, {ITimeOption} from "../models/timeOption";
+import Vote, {IVote} from "../models/vote";
 
-// In-memory stores keyed by UUID string
-const meetings = new Map<string, Meeting>();
-const timeOptions = new Map<string, TimeOption>();
-const votes = new Map<string, Vote>();
-
-/** Create a new meeting and return it */
+/** Create a new meeting */
 export async function createMeeting(
     title: string,
     ownerName: string,
     dateFrom: string,
     dateTo: string
-): Promise<Meeting> {
-    const id = uuidv4();
-    const newMeeting: Meeting = {id, title, ownerName, dateFrom, dateTo, optionIds: []};
-    meetings.set(id, newMeeting);
-    return newMeeting;
+): Promise<IMeeting> {
+    const meeting = new Meeting({title, ownerName, dateFrom, dateTo, optionIds: []});
+    return meeting.save();
 }
 
-/** Retrieve a meeting by its UUID */
-export async function getMeetingById(meetingId: string): Promise<Meeting | undefined> {
-    return meetings.get(meetingId);
+/** Retrieve a meeting by its MongoDB _id */
+export async function getMeetingById(meetingId: string): Promise<IMeeting | null> {
+    return Meeting.findById(meetingId).exec();
 }
 
 /** Add a time option (date+hour) to a meeting, enforcing date range */
@@ -29,8 +23,8 @@ export async function addTimeOption(
     meetingId: string,
     date: string,
     hour: number
-): Promise<TimeOption> {
-    const meeting = meetings.get(meetingId);
+): Promise<ITimeOption> {
+    const meeting = await Meeting.findById(meetingId);
     if (!meeting) throw new Error('Meeting not found');
 
     const optionDate = new Date(date);
@@ -44,94 +38,76 @@ export async function addTimeOption(
         );
     }
 
-    const id = uuidv4();
-    const newOption: TimeOption = {id, meetingId, date, hour};
-    timeOptions.set(id, newOption);
-    meeting.optionIds.push(id);
-    meetings.set(meetingId, meeting);
-    return newOption;
+    const option = new TimeOption({meetingId, date, hour});
+    const saved = await option.save();
+
+    meeting.optionIds.push(saved.id);
+    await meeting.save();
+
+    return saved;
 }
 
 /** Delete a time option (and any votes for it) */
-export async function deleteTimeOption(
-    meetingId: string,
-    optionId: string,
-): Promise<void> {
-    const meeting = meetings.get(meetingId);
+export async function deleteTimeOption(meetingId: string, optionId: string): Promise<void> {
+    const meeting = await Meeting.findById(meetingId);
     if (!meeting) throw new Error('Meeting not found');
     if (!meeting.optionIds.includes(optionId)) throw new Error('Option not part of meeting');
 
-    const option = timeOptions.get(optionId);
-    if (!option) throw new Error('Option not found');
-
-    // remove the option from the meeting
+    // Remove optionId from meeting
     meeting.optionIds = meeting.optionIds.filter(id => id !== optionId);
-    meetings.set(meetingId, meeting);
+    await meeting.save();
 
-    // delete the TimeOption itself
-    timeOptions.delete(optionId);
+    // Remove the TimeOption doc
+    await TimeOption.findByIdAndDelete(optionId);
 
-    // delete any votes tied to this option
-    for (const [voteId, vote] of votes.entries()) {
-        if (vote.meetingId === meetingId && vote.optionId === optionId) {
-            votes.delete(voteId);
-        }
-    }
+    // Remove any votes tied to this option
+    await Vote.deleteMany({meetingId, optionId});
 }
 
-/** Cast a vote for a specific option, preventing duplicates */
+/** Cast a vote */
 export async function castVote(
     meetingId: string,
     optionId: string,
     userName: string
-): Promise<Vote> {
-    const meeting = meetings.get(meetingId);
+): Promise<IVote> {
+    const meeting = await Meeting.findById(meetingId);
     if (!meeting) throw new Error('Meeting not found');
     if (!meeting.optionIds.includes(optionId)) throw new Error('Option not part of meeting');
 
-    // Prevent duplicate votes by same user for same option
-    for (const vote of votes.values()) {
-        if (
-            vote.meetingId === meetingId &&
-            vote.optionId === optionId &&
-            vote.userName === userName
-        ) {
-            throw new Error('User has already voted for this option');
-        }
-    }
+    const exists = await Vote.exists({meetingId, optionId, userName});
+    if (exists) throw new Error('User has already voted for this option');
 
-    const id = uuidv4();
-    const newVote: Vote = {id, meetingId, optionId, userName};
-    votes.set(id, newVote);
-    return newVote;
+    const vote = new Vote({meetingId, optionId, userName});
+    return vote.save();
 }
 
 /** Get all votes for a meeting */
-export async function getVotesByMeeting(meetingId: string): Promise<Vote[]> {
-    return Array.from(votes.values()).filter(v => v.meetingId === meetingId);
+export async function getVotesByMeeting(meetingId: string): Promise<IVote[]> {
+    return Vote.find({meetingId}).exec();
 }
 
-/** Summarize votes per option (including zero-vote options) and sort descending */
+/** Summarize votes per option (including zero-vote options) */
 export async function getVotesSummary(
     meetingId: string
-): Promise<{ option: TimeOption; count: number }[]> {
-    const meeting = meetings.get(meetingId);
-    if (!meeting) throw new Error('Meeting not found');
+): Promise<Array<{ option: ITimeOption; count: number }>> {
+    // 1) fetch all options for this meeting
+    const options = await TimeOption.find({meetingId}).lean().exec();
 
-    // Initialize summary with all options at count 0
-    const summaryMap = new Map<string, { option: TimeOption; count: number }>();
-    meeting.optionIds.forEach(optId => {
-        const option = timeOptions.get(optId);
-        if (option) summaryMap.set(optId, {option, count: 0});
-    });
+    // 2) aggregate vote counts
+    const counts = await Vote.aggregate([
+        {$match: {meetingId}},
+        {$group: {_id: '$optionId', count: {$sum: 1}}}
+    ]);
 
-    // Tally votes into the summaryMap
-    for (const vote of votes.values()) {
-        if (vote.meetingId !== meetingId) continue;
-        const entry = summaryMap.get(vote.optionId);
-        if (entry) entry.count++;
-    }
+    const countMap = new Map<string, number>();
+    counts.forEach(c => countMap.set(c._id, c.count));
 
-    // Convert to array and sort descending by vote count
-    return Array.from(summaryMap.values()).sort((a, b) => b.count - a.count);
+    // 3) merge and sort
+    const summary = options.map(opt => ({
+        option: opt,
+        count: countMap.get(opt.id) || 0
+    }));
+    summary.sort((a, b) => b.count - a.count);
+
+    return summary;
 }

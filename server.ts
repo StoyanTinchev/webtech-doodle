@@ -4,9 +4,14 @@ import rateLimit from 'express-rate-limit';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
+import {connectDB, disconnectDB} from "./db";
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const mongoUri = process.env.mongoUri;
 
 // Apply rate limiting to all requests to guard against abuse (e.g., max 100 requests per 15 minutes)
 const limiter = rateLimit({
@@ -31,6 +36,19 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     res.status(500).json({error: err.message});
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+// Connect once, then start listening
+connectDB(mongoUri)
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('Failed to connect to DB, exiting.', err);
+        process.exit(1);
+    });
+
+process.on('SIGINT', () => {
+    disconnectDB().then(() => process.exit(0));
 });
