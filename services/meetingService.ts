@@ -37,6 +37,15 @@ export async function addTimeOption(
             `Option date ${date} is outside the meeting range (${meeting.dateFrom} to ${meeting.dateTo})`
         );
     }
+    // Check if there is already an option for this date and hour
+    const existingOption = await TimeOption.findOne({
+        meetingId,
+        date,
+        hour
+    }).exec();
+    if (existingOption) {
+        throw new Error(`An option for ${date} at hour ${hour} already exists`);
+    }
 
     const option = new TimeOption({meetingId, date, hour});
     const saved = await option.save();
