@@ -7,8 +7,8 @@ const router = Router();
 router.post(
     '/:id/votes',
     [
-        param('id').isUUID(),
-        body('optionId').isUUID(),
+        param('id').isMongoId().isMongoId().withMessage('Invalid param meeting ObjectID'),
+        body('optionId').isMongoId().isMongoId().withMessage('Invalid body param option ObjectID'),
         body('userName').isString().notEmpty()
     ],
     voteCtrl.castVote
@@ -16,13 +16,13 @@ router.post(
 
 router.get(
     '/:id/votes',
-    [param('id').isUUID()],
+    [param('id').isMongoId().withMessage('Invalid param meeting ObjectID')],
     voteCtrl.listVotes
 );
 
 router.get(
     '/:id/votes/summary',
-    [param('id').isUUID()],
+    [param('id').isMongoId().isMongoId().withMessage('Invalid param meeting ObjectID')],
     voteCtrl.getSummary
 );
 export default router;

@@ -17,7 +17,7 @@ router.post(
 
 router.get(
     '/:id',
-    [param('id').isUUID()],
+    [param('id').isMongoId().withMessage('Invalid param meeting ObjectID')],
     meetingCtrl.getMeeting
 );
 export default router;

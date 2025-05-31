@@ -7,7 +7,7 @@ const router = Router();
 router.post(
     '/:id/options',
     [
-        param('id').isUUID(),
+        param('id').isMongoId().withMessage('Invalid param meeting ObjectID'),
         body('date').isISO8601(),
         body('hour').isInt({min: 0, max: 23})
     ],
@@ -17,8 +17,8 @@ router.post(
 router.delete(
     '/:id/options/:optionId',
     [
-        param('id').isUUID(),
-        param('optionId').isUUID()
+        param('id').isMongoId().withMessage('Invalid param meeting ObjectID'),
+        param('optionId').isMongoId().withMessage('Invalid param option ObjectID')
     ],
     optionCtrl.deleteOption
 );
