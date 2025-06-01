@@ -53,7 +53,6 @@ const VotingOptionsList = (props: VotingOptionsListProps) => {
     );
 
     let anySuccess = false;
-
     voteResults.forEach((result, index) => {
       if (!result.error) {
         anySuccess = true;

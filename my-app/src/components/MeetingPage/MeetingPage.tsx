@@ -22,7 +22,6 @@ const MeetingPage = () => {
         setMeetingWithVotesSummary(response);
       });
   }, [id]);
-
   const handleAddOptionClick = () => {
     setIsAddOptionVisible(true);
   };

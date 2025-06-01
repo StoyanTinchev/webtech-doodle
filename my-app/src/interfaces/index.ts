@@ -1,6 +1,7 @@
-export interface Meeting {
+export interface IMeeting {
   id: string;
   title: string;
+  description?: string;
   ownerName: string;
   dateFrom: string; // ISO date start
   dateTo: string; // ISO date end
@@ -27,7 +28,7 @@ export interface VoteSummary {
 }
 
 export interface MeetingWithVotesSummary {
-  meeting: Meeting;
+  meeting: IMeeting;
   votesSummary: VoteSummary[];
 }
 
