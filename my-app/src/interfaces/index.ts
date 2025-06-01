@@ -34,7 +34,7 @@ export interface MeetingWithVotesSummary {
 export interface VotingOptionProps {
   voteSummary: VoteSummary;
   handleOptionSelect: (optionId: string) => void;
-  selectedOptionIds: string[];
+  selectedOptionIds?: string[];
   hasVoted: boolean;
   successfulVotedOptionIds: string[];
   isVoted?: boolean;

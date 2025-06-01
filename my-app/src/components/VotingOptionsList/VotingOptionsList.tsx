@@ -1,4 +1,4 @@
-import { VoteSummary, VotingOptionsListProps } from "../../interfaces";
+import { VotingOptionsListProps } from "../../interfaces";
 import VotingOption from "../VotingOption/VotingOption";
 import { useState } from "react";
 import "./VotingOptionsList.css";
@@ -35,9 +35,20 @@ const VotingOptionsList = (props: VotingOptionsListProps) => {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ optionId: optionId, userName: "Bob" }),
+            body: JSON.stringify({ optionId: optionId, userName: "Petya" }),
           }
-        ).then((response) => response.json())
+        )
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Request failed with status ${response.status}`);
+            } else {
+              return response.json();
+            }
+          })
+          .catch((error) => {
+            console.error(`Error voting for option ${optionId}: `, error);
+            return { error };
+          })
       )
     );
 
@@ -52,8 +63,8 @@ const VotingOptionsList = (props: VotingOptionsListProps) => {
         );
         if (voteSummary) {
           voteSummary.count += 1;
+          setSuccessfulVotedOptionIds((prev) => [...prev, votedOptionId]);
         }
-        setSuccessfulVotedOptionIds((prev) => [...prev, votedOptionId]);
       } else {
         alert(
           `You have already voted for option with id ${selectedOptionIds[index]}`
@@ -79,7 +90,6 @@ const VotingOptionsList = (props: VotingOptionsListProps) => {
               key={voteSummary.option.id}
               voteSummary={voteSummary}
               handleOptionSelect={handleOptionSelect}
-              selectedOptionIds={selectedOptionIds}
               hasVoted={hasVoted}
               successfulVotedOptionIds={successfulVotedOptionIds}
             />

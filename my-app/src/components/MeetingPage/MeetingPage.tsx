@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { MeetingWithVotesSummary, VoteSummary } from "../../interfaces";
+import { MeetingWithVotesSummary } from "../../interfaces";
 import VotingOptionsList from "../VotingOptionsList/VotingOptionsList";
+import { useParams } from "react-router";
 
 const MeetingPage = () => {
   const [meetingWithVotesSummary, setMeetingWithVotesSummary] =
@@ -9,16 +10,18 @@ const MeetingPage = () => {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedHour, setSelectedHour] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { id } = useParams();
 
   useEffect(() => {
+    console.log(id);
     fetch(
-      "https://webtech-doodle-f3165275f403.herokuapp.com/api/meetings/5e3c0822-067e-4e18-9e3d-752a88946419"
+      `https://webtech-doodle-f3165275f403.herokuapp.com/api/meetings/${id}`
     )
       .then((res) => res.json())
       .then((response) => {
         setMeetingWithVotesSummary(response);
       });
-  }, []);
+  }, [id]);
 
   const handleAddOptionClick = () => {
     setIsAddOptionVisible(true);
@@ -39,7 +42,7 @@ const MeetingPage = () => {
     }
 
     setIsSubmitting(true);
-    
+
     const newOption = {
       date: selectedDate,
       hour: selectedHour,
@@ -58,10 +61,12 @@ const MeetingPage = () => {
         }
       );
       const data = await response.json();
-      // Add the new option to the state
       setMeetingWithVotesSummary((prevState) => {
         if (prevState) {
-          const newVotesSummary = [...prevState.votesSummary, { option: data, count: 0 }];
+          const newVotesSummary = [
+            ...prevState.votesSummary,
+            { option: data, count: 0 },
+          ];
           return { ...prevState, votesSummary: newVotesSummary };
         }
         return prevState;
@@ -111,10 +116,7 @@ const MeetingPage = () => {
               ))}
             </select>
           </label>
-          <button
-            onClick={handleSubmitNewOption}
-            disabled={isSubmitting}
-          >
+          <button onClick={handleSubmitNewOption} disabled={isSubmitting}>
             {isSubmitting ? "Submitting..." : "Submit New Option"}
           </button>
         </div>
