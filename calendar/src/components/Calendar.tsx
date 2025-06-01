@@ -39,6 +39,11 @@ function Calendar({ startDate, endDate, setStartDate, setEndDate }: CalendarProp
     const handleDayClick = (day:number) => {
         const clicked = new Date(currentYear, currentMonth, day);
     
+        if(clicked < new Date())
+        {
+          alert("You cannot select past data.")
+          return;
+        }
         if (!isSelecting || !startDate) {
           setStartDate(clicked);
           setEndDate(null);

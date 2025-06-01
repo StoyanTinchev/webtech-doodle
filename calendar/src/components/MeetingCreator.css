@@ -2,8 +2,20 @@
   text-align: center;
   background-color: rgb(73, 61, 158);
   height: 80vh;
-  width: 70vw;
+  padding: 30px;
   border-radius: 30px;
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
+}
+
+.MeetingCreatorContainer
+{
+  display: flex;
+  flex-direction: row;
+}
+
+h1{
+  margin: 10px;
+  color: white;
 }
