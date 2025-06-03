@@ -2,7 +2,7 @@ import {useState} from 'react';
 import Calendar from '../Calendar/Calendar';
 import Meeting from './Meeting';
 import './MeetingCreator.css';
-import { IMeeting } from '../../models';
+import { IMeeting } from '../../interfaces';
 
 function MeetingCreator() {
   const [startDate, setStartDate] = useState<Date | null>(null);
