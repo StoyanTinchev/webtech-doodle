@@ -1,24 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import { User, users, findUserByEmail } from '../models/User';
+import { findUserByEmail, findUserById, createUser } from '../models/User';
 
 const router = express.Router();
-const JWT_SECRET = 'a7dc3b69f8e4d5c2b1a9f0e8d7c6b5a4d3e2f1g0h9i8j7k6l5m4n3o2p1q0';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
 
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Basic validation
-    if (!username || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if user already exists - BAD REQUEST
-    if (findUserByEmail(email)) {
+    // Check if user already exists
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
@@ -26,32 +26,39 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
-    const newUser: User = {
-      id: uuidv4(),
-      username,
+    // Create user data object
+    const userData = {
+      name,
       email,
-      password: hashedPassword,
+      password: hashedPassword,  // Store as 'password' field
     };
 
-    // Add to database
-    users.push(newUser);
+    console.log('Creating user with data:', { name, email, password: 'hashed' });
 
-    // Create JWT token
+    // Save to database
+    const newUser = await createUser(userData);
+    console.log('User saved successfully:', newUser.id);
+
+    // Create JWT token - use virtual 'id' field
     const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: '1h' });
 
-    res.status(201).json({ // 201 - created
+    res.status(201).json({
       message: 'User registered successfully',
       token,
       user: {
         id: newUser.id,
-        username: newUser.username,
+        name: newUser.name,
         email: newUser.email
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Register error:', error);
-    res.status(500).json({ message: 'Server error' }); // 500 - internal server error
+    
+    if (error?.code === 11000) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+    
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -66,18 +73,18 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Validate password
+    // Validate password - compare with stored password field
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Create JWT token
+    // Create JWT token - use virtual 'id' field
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
     res.json({
@@ -85,41 +92,43 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username,
+        name: user.name,  
         email: user.email
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Информацията на текущия потребител
-router.get('/me', (req, res) => {
+// Get current user
+router.get('/me', async (req, res) => {
   try {
     const token = req.header('x-auth-token');
-    // 401 - unauthorized
+    
     if (!token) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
+      return res.status(401).json({ message: 'No token provided' });
     }
 
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
-    const user = users.find(u => u.id === decoded.id);
     
-    // 404 - not found
+    // Find user
+    const user = await findUserById(decoded.id);
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.json({
       id: user.id,
-      username: user.username,
+      name: user.name,
       email: user.email
     });
-  } catch (error) {
-    res.status(401).json({ message: 'Token is not valid' });
+  } catch (error: any) {
+    console.error('Get user error:', error);
+    res.status(401).json({ message: 'Invalid token' });
   }
 });
 
