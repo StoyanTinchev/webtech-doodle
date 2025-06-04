@@ -11,7 +11,9 @@ export async function castVoteOnOption(req: Request, res: Response): Promise<voi
         return;
     }
 
-    const { userId } = req.body;
+  // get userId from the authenticated token:
+  const userId = (req as any).userId as string;
+
     try {
         const vote = await meetingService.castVoteOnOption(optionId, userId);
         res.status(201).json({

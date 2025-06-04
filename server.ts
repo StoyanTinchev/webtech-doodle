@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import authRouter from './routes/auth';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
@@ -26,6 +27,7 @@ app.use(cors());
 app.use(express.json());
 
 // Mount routers
+app.use('/api/auth', authRouter);
 app.use('/api/meetings', meetingsRouter);
 app.use('/api', optionsRouter);  // exposes /api/options and /api/:meetingId/options
 app.use('/api', votesRouter);    // exposes /api/options/:id/votes

@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
+import {Request, Response} from 'express';
+import {validationResult} from 'express-validator';
 import * as meetingService from '../services/meetingService';
 
 export async function createMeeting(
@@ -8,30 +8,30 @@ export async function createMeeting(
 ): Promise<void> {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({ error: errors.array()[0].msg });
+        res.status(400).json({error: errors.array()[0].msg});
         return;
     }
 
-    const { title, ownerId, dateFrom, dateTo } = req.body;
+    const {title, ownerId, dateFrom, dateTo} = req.body;
     try {
         const meeting = await meetingService.createMeeting(title, ownerId, dateFrom, dateTo);
         res.status(201).json(meeting);
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({error: err.message});
     }
 }
 
 export async function getMeeting(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.id;
-  // We don’t need validationResult here because router already checks isMongoId
+    // We don’t need validationResult here because router already checks isMongoId
 
     const meeting = await meetingService.getMeetingById(meetingId);
     if (!meeting) {
-        res.status(404).json({ error: 'Meeting not found' });
+        res.status(404).json({error: 'Meeting not found'});
         return;
     }
 
-  const includeVotes = req.query.includeVotes === 'true';
+    const includeVotes = req.query.includeVotes === 'true';
 
     // 1) fetch all slots for this meeting
     const options = await meetingService.getOptionsByMeeting(meetingId);

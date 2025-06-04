@@ -1,5 +1,6 @@
-import { Router } from 'express';
-import { body, param } from 'express-validator';
+import {Router} from 'express';
+import {param} from 'express-validator';
+import {requireAuth} from '../middleware/authMiddleware';
 import * as voteCtrl from '../controllers/voteCtrl';
 
 const router = Router();
@@ -7,9 +8,9 @@ const router = Router();
 // Cast a new vote on a given slot
 router.post(
     '/options/:optionId/votes',
+    requireAuth,
     [
-        param('optionId').isMongoId().withMessage('Invalid option ObjectID'),
-        body('userId').isString().isMongoId().withMessage('Invalid userId')
+        param('optionId').isMongoId().withMessage('Invalid option ObjectID')
     ],
     voteCtrl.castVoteOnOption
 );

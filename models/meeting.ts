@@ -1,11 +1,14 @@
 import mongoose, {Document, Schema} from 'mongoose';
 
 export interface IMeeting {
-    id: string;
     title: string;
     ownerId: string;
     dateFrom: string;      // ISO8601 string
     dateTo: string;        // ISO8601 string
+}
+
+export interface IMeetingDocument extends IMeeting, Document {
+    _id: mongoose.Types.ObjectId;
 }
 
 const meetingSchema = new Schema(
@@ -38,5 +41,5 @@ meetingSchema.virtual('id').get(function (this: any) {
     return this._id.toHexString();
 });
 
-const Meeting = mongoose.model<IMeeting & Document>('Meeting', meetingSchema);
+const Meeting = mongoose.model<IMeetingDocument>('Meeting', meetingSchema);
 export default Meeting;

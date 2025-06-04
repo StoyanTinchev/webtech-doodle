@@ -1,10 +1,13 @@
 import mongoose, {Document, Schema} from 'mongoose';
 
 export interface ITimeOption {
-    id: string;
     meetingId: string;
     date: string;    // ISO8601 date string
     hour: number;    // 0–23
+}
+
+export interface ITimeOptionDocument extends ITimeOption, Document {
+    _id: mongoose.Types.ObjectId;
 }
 
 const timeOptionSchema = new Schema(
@@ -36,5 +39,8 @@ timeOptionSchema.virtual('id').get(function (this: any) {
     return this._id.toHexString();
 });
 
-const TimeOption = mongoose.model<ITimeOption & Document>('TimeOption', timeOptionSchema);
+const TimeOption = mongoose.model<ITimeOptionDocument>(
+    'TimeOption',
+    timeOptionSchema
+);
 export default TimeOption;
