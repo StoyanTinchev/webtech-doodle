@@ -4,7 +4,7 @@ export interface IUser {
     id: string;
     name: string;
     email: string;
-    passwordHash: string;
+    passwordHash: string;        // we store bcrypt hashes here
     registrationDate: Date;
 }
 
@@ -22,7 +22,7 @@ const userSchema = new Schema(
             lowercase: true,
             trim: true
         },
-        password: {            // Will store passwordHash
+        passwordHash: {
             type: String,
             required: [true, 'Password is required'],
             minlength: 6
@@ -39,16 +39,18 @@ const userSchema = new Schema(
             virtuals: true,
             transform: (_doc, ret) => {
                 delete ret._id;
+                delete ret.passwordHash;
                 return ret;
-            },
+            }
         },
         toObject: {
             virtuals: true,
             transform: (_doc, ret) => {
                 delete ret._id;
+                delete ret.passwordHash;
                 return ret;
-            },
-        },
+            }
+        }
     }
 );
 
@@ -57,5 +59,4 @@ userSchema.virtual('id').get(function (this: any) {
 });
 
 const User = mongoose.model<IUser & Document>('User', userSchema);
-
 export default User;

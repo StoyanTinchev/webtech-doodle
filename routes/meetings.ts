@@ -8,16 +8,19 @@ router.post(
     '/',
     [
         body('title').isString().notEmpty(),
-        body('ownerName').isString().notEmpty(),
+        body('ownerId').isString().isMongoId().withMessage('Invalid ownerId'),
         body('dateFrom').isISO8601(),
-        body('dateTo').isISO8601().custom((val, {req}) => new Date(val) >= new Date(req.body.dateFrom))
+        body('dateTo')
+            .isISO8601()
+            .custom((val, {req}) => new Date(val) >= new Date(req.body.dateFrom))
     ],
     meetingCtrl.createMeeting
 );
 
 router.get(
     '/:id',
-    [param('id').isMongoId().withMessage('Invalid param meeting ObjectID')],
+    [param('id').isMongoId().withMessage('Invalid meeting ObjectID')],
     meetingCtrl.getMeeting
 );
+
 export default router;

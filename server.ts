@@ -4,8 +4,8 @@ import rateLimit from 'express-rate-limit';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
-import {connectDB, disconnectDB} from "./db";
-import dotenv from 'dotenv'
+import { connectDB, disconnectDB } from './db';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -13,36 +13,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const mongoUri = process.env.mongoUri;
 
-// Apply rate limiting to all requests to guard against abuse (e.g., max 100 requests per 15 minutes)
+// Rate limiting: max 100 requests per 15 minutes per IP
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 100,               // limit each IP to 100 requests per windowMs
-    message: {error: 'Too many requests, please try again later.'}
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    message: { error: 'Too many requests, please try again later.' }
 });
 app.use(limiter);
 
-// Enable CORS and JSON body parsing
+// CORS + JSON parsing
 app.use(cors());
 app.use(express.json());
 
-// Mount routers under /meetings
+// Mount routers
 app.use('/api/meetings', meetingsRouter);
-app.use('/api/meetings', optionsRouter);
-app.use('/api/meetings', votesRouter);
+app.use('/api', optionsRouter);  // exposes /api/options and /api/:meetingId/options
+app.use('/api', votesRouter);    // exposes /api/options/:id/votes
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Unhandled error:', err.stack);
-    res.status(500).json({error: err.message});
+    res.status(500).json({ error: err.message });
 });
 
-
-// Connect once, then start listening
+// Connect to Mongo, then start server
 connectDB(mongoUri)
     .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-        });
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     })
     .catch(err => {
         console.error('Failed to connect to DB, exiting.', err);
