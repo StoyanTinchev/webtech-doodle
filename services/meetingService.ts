@@ -90,16 +90,16 @@ export async function castVoteOnOption(
     optionId: string,
     userId: string
 ): Promise<IVote> {
-    // 1. Fetch the slot to learn its meetingId
+  // 1. Fetch the slot to confirm it exists (and get its meetingId)
     const slot = await TimeOption.findById(optionId).exec();
     if (!slot) throw new Error('Option not found');
 
     const meetingId = slot.meetingId;
 
-    // 2. If this user already voted anywhere in that meeting, remove their old vote:
-    const existing = await Vote.findOne({ meetingId, userId }).exec();
-    if (existing) {
-        await Vote.findByIdAndDelete(existing.id).exec();
+  // 2. Check if this exact user already voted on *this* same option
+  const duplicate = await Vote.findOne({ meetingId, optionId, userId }).exec();
+  if (duplicate) {
+    throw new Error('You have already voted for this option');
     }
 
     // 3. Save the new vote

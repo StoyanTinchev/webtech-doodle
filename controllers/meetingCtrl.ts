@@ -8,7 +8,7 @@ export async function createMeeting(
 ): Promise<void> {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
+        res.status(400).json({ error: errors.array()[0].msg });
         return;
     }
 
@@ -23,13 +23,15 @@ export async function createMeeting(
 
 export async function getMeeting(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.id;
-    const includeVotes = req.query.includeVotes === 'true';
+  // We don’t need validationResult here because router already checks isMongoId
 
     const meeting = await meetingService.getMeetingById(meetingId);
     if (!meeting) {
         res.status(404).json({ error: 'Meeting not found' });
         return;
     }
+
+  const includeVotes = req.query.includeVotes === 'true';
 
     // 1) fetch all slots for this meeting
     const options = await meetingService.getOptionsByMeeting(meetingId);

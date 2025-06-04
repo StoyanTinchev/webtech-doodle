@@ -7,7 +7,7 @@ export async function castVoteOnOption(req: Request, res: Response): Promise<voi
     const optionId = req.params.optionId;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
+        res.status(400).json({ error: errors.array()[0].msg });
         return;
     }
 
@@ -29,6 +29,8 @@ export async function castVoteOnOption(req: Request, res: Response): Promise<voi
 /** List all votes for a given slot */
 export async function listVotesByOption(req: Request, res: Response): Promise<void> {
     const optionId = req.params.optionId;
+  // No validationResult here because router checks isMongoId
+
     const votes = await meetingService.getVotesByOption(optionId);
 
     res.json(
@@ -43,9 +45,11 @@ export async function listVotesByOption(req: Request, res: Response): Promise<vo
 /** Delete a single vote by ID */
 export async function deleteVote(req: Request, res: Response): Promise<void> {
     const { voteId, optionId } = req.params;
+  // Router already ensures both are valid Mongo IDs.
 
-    const existing = await meetingService.getVotesByOption(optionId);
-    const found = existing.find(v => v.id === voteId);
+  // First, check that the vote actually belongs to this option:
+  const allVotes = await meetingService.getVotesByOption(optionId);
+  const found = allVotes.find(v => v.id === voteId);
     if (!found) {
         res.status(404).json({ error: 'Vote not found for this option' });
         return;
