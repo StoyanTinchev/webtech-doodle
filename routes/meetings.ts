@@ -23,6 +23,12 @@ router.post(
 );
 
 router.get(
+    '/user/:userId',
+    [param('userId').isMongoId().withMessage('Invalid user ObjectID')],
+    meetingCtrl.getMeetingsByUser
+);
+
+router.get(
     '/:id',
     [param('id').isMongoId().withMessage('Invalid meeting ObjectID')],
     meetingCtrl.getMeeting

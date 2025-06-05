@@ -21,6 +21,21 @@ export async function createMeeting(
     }
 }
 
+/** Get all meetings where ownerId = :userId */
+export async function getMeetingsByUser(
+    req: Request,
+    res: Response
+): Promise<void> {
+    const userId = req.params.userId;
+
+    try {
+        const meetings = await meetingService.getMeetingsByOwner(userId);
+        res.json(meetings);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
 // ?includeVotes=ture
 export async function getMeeting(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.id;

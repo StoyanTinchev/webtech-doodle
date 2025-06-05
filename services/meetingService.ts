@@ -19,6 +19,13 @@ export async function getMeetingById(meetingId: string): Promise<IMeetingDocumen
     return Meeting.findById(meetingId).exec();
 }
 
+/** GET ALL MEETINGS for a given ownerId */
+export async function getMeetingsByOwner(
+    ownerId: string
+): Promise<IMeetingDocument[]> {
+    return Meeting.find({ownerId}).exec();
+}
+
 /** List all time‐options (slots) for a given meeting */
 export async function getOptionsByMeeting(meetingId: string): Promise<ITimeOptionDocument[]> {
     return TimeOption.find({meetingId}).exec();

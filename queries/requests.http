@@ -28,6 +28,7 @@ Content-Type: application/json
   "password": "alicePassword"
 }
 
+> {% client.global.set("user1Id", response.body.user.id); %}
 > {% client.global.set("token1", response.body.token); %}
 
 
@@ -289,6 +290,9 @@ GET {{host}}/api/meetings/{{meetingId}}?includeVotes=true
 #     }
 #   ]
 # }
+
+### 3. Fetch all meetings owned by Alice
+GET {{host}}/api/meetings/user/{{user1Id}}
 
 
 
