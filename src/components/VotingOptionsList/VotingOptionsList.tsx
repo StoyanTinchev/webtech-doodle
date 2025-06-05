@@ -1,18 +1,21 @@
+import React, { useState } from "react";
 import { VotingOptionsListProps } from "../../interfaces";
-import VotingOption from "../VotingOption/VotingOption";
-import { useState } from "react";
 import "./VotingOptionsList.css";
+import { meetingService } from "../../services/meetingService";
+import VotingOption from "../VotingOption/VotingOption.tsx";
 
-const VotingOptionsList = (props: VotingOptionsListProps) => {
+const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
+                                                               votesSummary,
+                                                               refreshAfterVote
+                                                             }) => {
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [hasVoted, setHasVoted] = useState(false);
   const [successfulVotedOptionIds, setSuccessfulVotedOptionIds] = useState<
-    string[]
+      string[]
   >([]);
 
   const handleOptionSelect = (optionId: string) => {
     if (hasVoted) return;
-
     if (selectedOptionIds.includes(optionId)) {
       setSelectedOptionIds(selectedOptionIds.filter((id) => id !== optionId));
     } else {
@@ -28,77 +31,47 @@ const VotingOptionsList = (props: VotingOptionsListProps) => {
       return;
     }
 
-    const voteResults = await Promise.all(
-      selectedOptionIds.map((optionId) =>
-        fetch(
-          `https://webtech-doodle-f3165275f403.herokuapp.com/api/meetings/${props.votesSummary[0].option.meetingId}/votes`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ optionId: optionId, userName: "Petya" }),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Request failed with status ${response.status}`);
-            } else {
-              return response.json();
-            }
-          })
-          .catch((error) => {
-            console.error(`Error voting for option ${optionId}: `, error);
-            return { error };
-          })
-      )
-    );
-
     let anySuccess = false;
-    voteResults.forEach((result, index) => {
-      if (!result.error) {
+    for (const optionId of selectedOptionIds) {
+      try {
+        await meetingService.castVote(optionId);
         anySuccess = true;
-        const votedOptionId = selectedOptionIds[index];
-        const voteSummary = props.votesSummary.find(
-          (vs) => vs.option.id === votedOptionId
-        );
-        if (voteSummary) {
-          voteSummary.count += 1;
-          setSuccessfulVotedOptionIds((prev) => [...prev, votedOptionId]);
-        }
-      } else {
-        alert(
-          `You have already voted for option with id ${selectedOptionIds[index]}`
-        );
+        setSuccessfulVotedOptionIds((prev) => [...prev, optionId]);
+      } catch (err: any) {
+        alert(`Error voting for option ${optionId}: ${err.message}`);
       }
-    });
+    }
 
     if (anySuccess) {
       setHasVoted(true);
+      // After we vote, we should refresh the meeting data:
+      refreshAfterVote();
     }
   };
 
-  if (!props.votesSummary) {
-    return <p>No options</p>;
+  if (!votesSummary || votesSummary.length === 0) {
+    return <p>No options available.</p>;
   }
 
   return (
-    <div>
-      <form className="voting-options-wrapper" onSubmit={handleSubmitVote}>
-        <ul className="voting-options-list">
-          {props.votesSummary.map((voteSummary) => (
-            <VotingOption
-              key={voteSummary.option.id}
-              voteSummary={voteSummary}
-              handleOptionSelect={handleOptionSelect}
-              hasVoted={hasVoted}
-              successfulVotedOptionIds={successfulVotedOptionIds}
-            />
-          ))}
-        </ul>
-        <button type="submit" disabled={hasVoted}>
-          Submit your vote
-        </button>
-      </form>
-    </div>
+      <div>
+        <form className="voting-options-wrapper" onSubmit={handleSubmitVote}>
+          <ul className="voting-options-list">
+            {votesSummary.map((voteSummary) => (
+                <VotingOption
+                    key={voteSummary.option.id}
+                    voteSummary={voteSummary}
+                    handleOptionSelect={handleOptionSelect}
+                    hasVoted={hasVoted}
+                    successfulVotedOptionIds={successfulVotedOptionIds}
+                />
+            ))}
+          </ul>
+          <button type="submit" disabled={hasVoted}>
+            {hasVoted ? "You’ve Voted" : "Submit Your Vote"}
+          </button>
+        </form>
+      </div>
   );
 };
 

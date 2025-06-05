@@ -1,37 +1,44 @@
-import { useEffect, useState } from "react";
-import { MeetingWithVotesSummary } from "../../interfaces";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  MeetingWithVotesSummary,
+  VoteSummary
+} from "../../interfaces";
 import VotingOptionsList from "../VotingOptionsList/VotingOptionsList";
-import { useParams } from "react-router";
+import { meetingService } from "../../services/meetingService";
 
-const MeetingPage = () => {
-  const [meetingWithVotesSummary, setMeetingWithVotesSummary] =
-    useState<MeetingWithVotesSummary | null>(null);
-  const [isAddOptionVisible, setIsAddOptionVisible] = useState(false);
+const MeetingPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [meetingData, setMeetingData] =
+      useState<MeetingWithVotesSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [addingOption, setAddingOption] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedHour, setSelectedHour] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { id } = useParams();
+  const [submittingOption, setSubmittingOption] = useState(false);
+
+  const fetchMeeting = async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await meetingService.fetchMeetingWithSummary(id);
+      setMeetingData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    console.log(id);
-    fetch(
-      `https://webtech-doodle-f3165275f403.herokuapp.com/api/meetings/${id}`
-    )
-      .then((res) => res.json())
-      .then((response) => {
-        setMeetingWithVotesSummary(response);
-      });
+    fetchMeeting();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
   const handleAddOptionClick = () => {
-    setIsAddOptionVisible(true);
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(e.target.value);
-  };
-
-  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedHour(Number(e.target.value));
+    setAddingOption(true);
   };
 
   const handleSubmitNewOption = async () => {
@@ -39,88 +46,96 @@ const MeetingPage = () => {
       alert("Please select a valid date and time.");
       return;
     }
-
-    setIsSubmitting(true);
-
-    const newOption = {
-      date: selectedDate,
-      hour: selectedHour,
-      meetingId: meetingWithVotesSummary?.meeting.id,
-    };
+    setSubmittingOption(true);
 
     try {
-      const response = await fetch(
-        `https://webtech-doodle-f3165275f403.herokuapp.com/api/meetings/${meetingWithVotesSummary?.meeting.id}/options`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newOption),
-        }
+      const newOpt = await meetingService.addOption(
+          id!,
+          selectedDate,
+          selectedHour
       );
-      const data = await response.json();
-      setMeetingWithVotesSummary((prevState) => {
-        if (prevState) {
-          const newVotesSummary = [
-            ...prevState.votesSummary,
-            { option: data, count: 0 },
-          ];
-          return { ...prevState, votesSummary: newVotesSummary };
-        }
-        return prevState;
+      // update local state:
+      setMeetingData((prev) => {
+        if (!prev) return prev;
+        const updated: VoteSummary = {
+          option: newOpt,
+          count: 0
+        };
+        return {
+          ...prev,
+          votesSummary: [...prev.votesSummary, updated]
+        };
       });
-      setIsAddOptionVisible(false);
+      setAddingOption(false);
       setSelectedDate("");
       setSelectedHour(0);
-    } catch (error) {
-      console.error("Error adding new option:", error);
+    } catch (err: any) {
+      alert(err.message);
     } finally {
-      setIsSubmitting(false);
+      setSubmittingOption(false);
     }
   };
 
-  if (!meetingWithVotesSummary?.meeting) {
-    return <p>No meeting found!</p>;
-  }
+  if (loading) return <p>Loading meeting...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!meetingData) return <p>No meeting found!</p>;
 
   return (
-    <div>
-      <h1>{`Organized by ${meetingWithVotesSummary.meeting.ownerName}`}</h1>
-      <h2>{`Title: ${meetingWithVotesSummary.meeting.title}`}</h2>
-      <VotingOptionsList votesSummary={meetingWithVotesSummary.votesSummary} />
-      {!isAddOptionVisible ? (
-        <button className="add-option-button" onClick={handleAddOptionClick}>
-          Add Option
-        </button>
-      ) : (
-        <div className="add-option-form">
-          <label>
-            Select Date:
-            <input
-              type="date"
-              min={meetingWithVotesSummary.meeting.dateFrom}
-              max={meetingWithVotesSummary.meeting.dateTo}
-              value={selectedDate}
-              onChange={handleDateChange}
-            />
-          </label>
-          <label>
-            Select Hour:
-            <select value={selectedHour} onChange={handleHourChange}>
-              {[...Array(24).keys()].map((hour) => (
-                <option key={hour} value={hour}>
-                  {hour}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button onClick={handleSubmitNewOption} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit New Option"}
-          </button>
-        </div>
-      )}
-    </div>
+      <div style={{ padding: "2rem" }}>
+        <h1>Meeting: {meetingData.meeting.title}</h1>
+        <p>
+          Owner: <strong>{meetingData.meeting.ownerId}</strong>
+        </p>
+        <p>
+          From {meetingData.meeting.dateFrom} to {meetingData.meeting.dateTo}
+        </p>
+
+        <hr />
+
+        <VotingOptionsList
+            votesSummary={meetingData.votesSummary}
+            meetingId={meetingData.meeting.id}
+            refreshAfterVote={fetchMeeting}
+        />
+
+        {!addingOption ? (
+            <button onClick={handleAddOptionClick}>+ Add Option</button>
+        ) : (
+            <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+              <label style={{ marginRight: "1rem" }}>
+                Date:
+                <input
+                    type="date"
+                    min={meetingData.meeting.dateFrom}
+                    max={meetingData.meeting.dateTo}
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </label>
+
+              <label style={{ marginRight: "1rem" }}>
+                Hour:
+                <select
+                    value={selectedHour}
+                    onChange={(e) => setSelectedHour(Number(e.target.value))}
+                >
+                  {[...Array(24).keys()].map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                  onClick={handleSubmitNewOption}
+                  disabled={submittingOption}
+              >
+                {submittingOption ? "Submitting..." : "Submit Option"}
+              </button>
+            </div>
+        )}
+      </div>
   );
 };
 

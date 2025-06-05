@@ -1,8 +1,8 @@
+import React, { useState, useEffect } from "react";
 import { VotingOptionProps } from "../../interfaces";
 import "./VotingOption.css";
-import { useState, useEffect } from "react";
 
-const VotingOption = (props: VotingOptionProps) => {
+const VotingOption: React.FC<VotingOptionProps> = (props) => {
   const [isChecked, setIsChecked] = useState(false);
 
   useEffect(() => {
@@ -12,30 +12,30 @@ const VotingOption = (props: VotingOptionProps) => {
   }, [props.isVoted]);
 
   const handleCheckboxChange = () => {
-    setIsChecked((prevState) => !prevState);
+    setIsChecked((prev) => !prev);
     props.handleOptionSelect(props.voteSummary.option.id);
   };
 
   return (
-    <li className="voting-option-card">
-      <label className="voting-option-content">
-        {!props.hasVoted && (
-          <input
-            type="checkbox"
-            className="voting-option-checkbox"
-            checked={isChecked}
-            onChange={handleCheckboxChange}
-          />
-        )}
-        <span>
+      <li className="voting-option-card">
+        <label className="voting-option-content">
+          {!props.hasVoted && (
+              <input
+                  type="checkbox"
+                  className="voting-option-checkbox"
+                  checked={isChecked}
+                  onChange={handleCheckboxChange}
+              />
+          )}
+          <span>
           Date: {props.voteSummary.option.date}, Hour:{" "}
-          {props.voteSummary.option.hour}, Votes: {props.voteSummary.count}
-          {props.successfulVotedOptionIds.includes(
-            props.voteSummary.option.id
-          ) && <strong> (Voted)</strong>}
+            {props.voteSummary.option.hour}, Votes: {props.voteSummary.count}{" "}
+            {props.successfulVotedOptionIds.includes(
+                props.voteSummary.option.id
+            ) && <strong> (Voted)</strong>}
         </span>
-      </label>
-    </li>
+        </label>
+      </li>
   );
 };
 
