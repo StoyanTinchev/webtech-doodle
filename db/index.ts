@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// search fields that are already existing in the db
 mongoose.set('strictQuery', false);
 
 

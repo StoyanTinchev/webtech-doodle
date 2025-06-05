@@ -5,7 +5,7 @@ import authRouter from './routes/auth';
 import meetingsRouter from './routes/meetings';
 import optionsRouter from './routes/options';
 import votesRouter from './routes/votes';
-import { connectDB, disconnectDB } from './db';
+import {connectDB, disconnectDB} from './db';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,24 +18,26 @@ const mongoUri = process.env.mongoUri;
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 100,
-    message: { error: 'Too many requests, please try again later.' }
+    message: {error: 'Too many requests, please try again later.'}
 });
 app.use(limiter);
 
 // CORS + JSON parsing
-app.use(cors());
+app.use(cors({
+    credentials: true,
+}));
 app.use(express.json());
 
 // Mount routers
 app.use('/api/auth', authRouter);
 app.use('/api/meetings', meetingsRouter);
-app.use('/api', optionsRouter);  // exposes /api/options and /api/:meetingId/options
-app.use('/api', votesRouter);    // exposes /api/options/:id/votes
+app.use('/api/meetings', optionsRouter);
+app.use('/api/meetings', votesRouter);
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Unhandled error:', err.stack);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({error: err.message});
 });
 
 // Connect to Mongo, then start server

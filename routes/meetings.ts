@@ -10,7 +10,6 @@ router.post(
     requireAuth,
     [
         body('title').isString().notEmpty(),
-        body('ownerId').isString().isMongoId().withMessage('Invalid ownerId'),
         body('dateFrom').isISO8601(),
         body('dateTo')
             .isISO8601()

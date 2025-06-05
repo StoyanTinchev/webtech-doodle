@@ -20,8 +20,8 @@ export async function addOption(req: Request, res: Response): Promise<void> {
             hour: option.hour,
             voteCount: 0,
             _links: {
-                self: `/api/options/${option.id}`,
-                votes: `/api/options/${option.id}/votes`
+                self: `/api/meetings/options/${option.id}`,
+                votes: `/api/meetings/options/${option.id}/votes`
             }
         });
     } catch (err: any) {
@@ -32,7 +32,6 @@ export async function addOption(req: Request, res: Response): Promise<void> {
 /** List all slots for a meeting (each with voteCount) */
 export async function listOptions(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.meetingId;
-  // No need to re‐validate meetingId here (router already checks isMongoId)
 
   // If the meeting itself doesn’t exist, getOptionsByMeeting will return an empty array.
     const options = await meetingService.getOptionsByMeeting(meetingId);
@@ -55,7 +54,6 @@ export async function listOptions(req: Request, res: Response): Promise<void> {
 /** Get a single slot by its ID (with voteCount + links) */
 export async function getOptionById(req: Request, res: Response): Promise<void> {
     const optionId = req.params.optionId;
-  // No need to re‐validate optionId here (router already checks isMongoId)
 
     const opt = await meetingService.getOptionById(optionId);
 

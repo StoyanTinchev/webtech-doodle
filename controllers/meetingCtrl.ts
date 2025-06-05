@@ -21,9 +21,9 @@ export async function createMeeting(
     }
 }
 
+// ?includeVotes=ture
 export async function getMeeting(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.id;
-    // We don’t need validationResult here because router already checks isMongoId
 
     const meeting = await meetingService.getMeetingById(meetingId);
     if (!meeting) {
@@ -55,12 +55,7 @@ export async function getMeeting(req: Request, res: Response): Promise<void> {
 
             if (includeVotes) {
                 // fetch all votes for this option if requested
-                const votes = await meetingService.getVotesByOption(opt.id);
-                base.votes = votes.map(v => ({
-                    voteId: v.id,
-                    userId: v.userId,
-                    votedAt: v.votedAt
-                }));
+                base.votes = await meetingService.getVotesByOptionWithUserInformation(opt.id);
             }
 
             return base;

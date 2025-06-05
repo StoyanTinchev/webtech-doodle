@@ -1,49 +1,366 @@
 @localhost = http://localhost:3000
-@heroku = https://webtech-doodle-f3165275f403.herokuapp.com
+@heroku    = https://webtech-doodle-f3165275f403.herokuapp.com
 
 @host = {{localhost}}
 
-### 1. Create a new meeting
-POST {{host}}/api/meetings
+#######################################################################
+# 1. Register and log in User #1
+#######################################################################
+
+### 1.1 Register User #1
+POST {{host}}/api/auth/register
 Content-Type: application/json
 
 {
-  "title": "New meet",
-  "ownerName": "Stoyan",
-  "dateFrom": "2025-05-01",
-  "dateTo": "2025-05-05"
+  "name":     "Alice Smith",
+  "email":    "alice@example.com",
+  "password": "alicePassword"
+}
+
+> {% client.global.set("user1Id", response.body.user.id); %}
+
+### 1.2 Log in User #1
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email":    "alice@example.com",
+  "password": "alicePassword"
+}
+
+> {% client.global.set("token1", response.body.token); %}
+
+
+
+#######################################################################
+# 2. User #1 creates a meeting
+#######################################################################
+
+### 2.1 Create Meeting as Alice (token1)
+POST {{host}}/api/meetings
+x-auth-token: {{token1}}
+Content-Type: application/json
+
+{
+  "title":    "Team Sync",
+  "dateFrom": "2025-07-01",
+  "dateTo":   "2025-07-05"
 }
 
 > {% client.global.set("meetingId", response.body.id); %}
 
-### 2. Get meeting details
-GET {{host}}/api/meetings/{{meetingId}}
+### 2.2 Try creating a meeting without token (should 401)
+POST {{host}}/api/meetings
+Content-Type: application/json
 
-### 3. Add a time option to meeting
+{
+  "title":    "Hackathon",
+  "dateFrom": "2025-08-01",
+  "dateTo":   "2025-08-02"
+}
+
+### Expected: 401 Unauthorized
+# { "error": "No token provided" }
+
+
+
+#######################################################################
+# 3. Add two time‐options to the meeting
+#######################################################################
+
+### 3.1 Add Option #1 (2025-07-02 @ 10:00)
 POST {{host}}/api/meetings/{{meetingId}}/options
 Content-Type: application/json
 
 {
-  "date": "2025-05-02",
-  "hour": 14
+  "date": "2025-07-02",
+  "hour": 10
 }
 
-> {% client.global.set("optionId", response.body.id); %}
+> {% client.global.set("option1Id", response.body.optionId); %}
 
-### 4. Delete a time option from meeting
-DELETE {{host}}/api/meetings/{{meetingId}}/options/{{optionId}}
-
-### 5. Cast a vote for that option
-POST {{host}}/api/meetings/{{meetingId}}/votes
+### 3.2 Add Option #2 (2025-07-03 @ 14:00)
+POST {{host}}/api/meetings/{{meetingId}}/options
 Content-Type: application/json
 
 {
-  "optionId": "{{optionId}}",
-  "userName": "Bob"
+  "date": "2025-07-03",
+  "hour": 14
 }
 
-### 6. List all raw votes for the meeting
-GET {{host}}/api/meetings/{{meetingId}}/votes
+> {% client.global.set("option2Id", response.body.optionId); %}
 
-### 7. Get aggregated vote summary (sorted)
-GET {{host}}/api/meetings/{{meetingId}}/votes/summary
+### 3.3 Try adding a slot outside the meeting range (should 400)
+POST {{host}}/api/meetings/{{meetingId}}/options
+Content-Type: application/json
+
+{
+  "date": "2025-07-10",
+  "hour": 11
+}
+
+### Expected: 400 Bad Request
+# { "error": "Option date 2025-07-10 is outside meeting range (2025-07-01 to 2025-07-05)" }
+
+
+
+#######################################################################
+# 4. User #1 (Alice) votes for Option #1
+#######################################################################
+
+### 4.1 Cast vote on Option #1 as Alice
+POST {{host}}/api/meetings/options/{{option1Id}}/votes
+x-auth-token: {{token1}}
+Content-Type: application/json
+
+{
+}
+> {% client.global.set("vote1Id", response.body.voteId); %}
+
+### 4.2 Attempt to vote again on Option #1 as Alice (should 400)
+POST {{host}}/api/meetings/options/{{option1Id}}/votes
+x-auth-token: {{token1}}
+Content-Type: application/json
+
+{ }
+
+### Expected: 400 Bad Request
+# { "error": "You have already voted for this option" }
+
+### 4.3 Attempt to vote on a non‐existent option (should 400)
+POST {{host}}/api/meetings/options/000000000000000000000000/votes
+x-auth-token: {{token1}}
+Content-Type: application/json
+
+{ }
+
+### Expected: 400 Bad Request
+# { "error": "Option not found" }
+
+
+
+#######################################################################
+# 5. Register and log in User #2
+#######################################################################
+
+### 5.1 Register User #2
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name":     "Bob Johnson",
+  "email":    "bob@example.com",
+  "password": "bobPassword"
+}
+
+> {% client.global.set("user2Id", response.body.user.id); %}
+
+### 5.2 (Optional) Log in User #2
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email":    "bob@example.com",
+  "password": "bobPassword"
+}
+
+> {% client.global.set("token2", response.body.token); %}
+
+
+
+#######################################################################
+# 6. User #2 (Bob) votes for both Option #1 and Option #2
+#######################################################################
+
+### 6.1 Cast vote on Option #1 as Bob
+POST {{host}}/api/meetings/options/{{option1Id}}/votes
+x-auth-token: {{token2}}
+Content-Type: application/json
+
+{ }
+> {% client.global.set("vote2Id", response.body.voteId); %}
+
+### 6.2 Cast vote on Option #2 as Bob
+POST {{host}}/api/meetings/options/{{option2Id}}/votes
+x-auth-token: {{token2}}
+Content-Type: application/json
+
+{ }
+> {% client.global.set("vote3Id", response.body.voteId); %}
+
+### 6.3 Bob tries to vote again on Option #2 (should 400)
+POST {{host}}/api/meetings/options/{{option2Id}}/votes
+x-auth-token: {{token2}}
+Content-Type: application/json
+
+{ }
+
+### Expected: 400 Bad Request
+# { "error": "You have already voted for this option" }
+
+
+
+#######################################################################
+# 7. Retrieve vote lists
+#######################################################################
+
+### 7.1 List all votes for Option #1
+GET {{host}}/api/meetings/options/{{option1Id}}/votes
+
+# Example response:
+# [
+#   { "voteId": "{{vote1Id}}", "userId": "{{user1Id}}", "votedAt": "2025-...Z" },
+#   { "voteId": "{{vote2Id}}", "userId": "{{user2Id}}", "votedAt": "2025-...Z" }
+# ]
+
+### 7.2 List all votes for Option #2
+GET {{host}}/api/meetings/options/{{option2Id}}/votes
+
+# Example response:
+# [
+#   { "voteId": "{{vote3Id}}", "userId": "{{user2Id}}", "votedAt": "2025-...Z" }
+# ]
+
+
+
+#######################################################################
+# 8. Retrieve meeting details (voteCounts and embedded votes)
+#######################################################################
+
+### 8.1 Get meeting (default, no embedded votes)
+GET {{host}}/api/meetings/{{meetingId}}
+
+# Example response:
+# {
+#   "meetingId": "{{meetingId}}",
+#   "title": "Team Sync",
+#   "ownerId": "{{user1Id}}",
+#   "dateFrom": "2025-07-01",
+#   "dateTo": "2025-07-05",
+#   "options": [
+#     {
+#       "optionId": "{{option1Id}}",
+#       "date": "2025-07-02",
+#       "hour": 10,
+#       "voteCount": 2,
+#       "_links": { "self": "/api/options/{{option1Id}}", "votes": "/api/options/{{option1Id}}/votes" }
+#     },
+#     {
+#       "optionId": "{{option2Id}}",
+#       "date": "2025-07-03",
+#       "hour": 14,
+#       "voteCount": 1,
+#       "_links": { "self": "/api/options/{{option2Id}}", "votes": "/api/options/{{option2Id}}/votes" }
+#     }
+#   ]
+# }
+
+### 8.2 Get meeting with all votes embedded
+GET {{host}}/api/meetings/{{meetingId}}?includeVotes=true
+
+# Example response:
+# {
+#   "meetingId": "{{meetingId}}",
+#   "title": "Team Sync",
+#   "ownerId": "{{user1Id}}",
+#   "dateFrom": "2025-07-01",
+#   "dateTo": "2025-07-05",
+#   "options": [
+#     {
+#       "optionId": "{{option1Id}}",
+#       "date": "2025-07-02",
+#       "hour": 10,
+#       "voteCount": 2,
+#       "_links": { "self": "/api/options/{{option1Id}}", "votes": "/api/options/{{option1Id}}/votes" },
+#       "votes": [
+#         { "voteId": "{{vote1Id}}", "userId": "{{user1Id}}", "votedAt": "2025-...Z" },
+#         { "voteId": "{{vote2Id}}", "userId": "{{user2Id}}", "votedAt": "2025-...Z" }
+#       ]
+#     },
+#     {
+#       "optionId": "{{option2Id}}",
+#       "date": "2025-07-03",
+#       "hour": 14,
+#       "voteCount": 1,
+#       "_links": { "self": "/api/options/{{option2Id}}", "votes": "/api/options/{{option2Id}}/votes" },
+#       "votes": [
+#         { "voteId": "{{vote3Id}}", "userId": "{{user2Id}}", "votedAt": "2025-...Z" }
+#       ]
+#     }
+#   ]
+# }
+
+
+
+#######################################################################
+# 9. Deletions and corner cases
+#######################################################################
+
+### 9.1 Delete Bob’s vote on Option #1
+DELETE {{host}}/api/meetings/options/{{option1Id}}/votes/{{vote2Id}}
+
+# Expected response: 204 No Content
+
+### 9.2 Verify Option #1 votes after deletion
+GET {{host}}/api/meetings/options/{{option1Id}}/votes
+
+# Now response should only include Alice’s vote ({{vote1Id}}).
+
+### 9.3 Delete a non‐existent vote (should 404)
+DELETE {{host}}/api/meetings/options/{{option2Id}}/votes/000000000000000000000000
+
+# Expected: 404 Not Found
+# { "error": "Vote not found for this option" }
+
+### 9.4 Delete Option #2 (and all its votes)
+DELETE {{host}}/api/meetings/{{meetingId}}/options/{{option2Id}}
+
+# Expected: 204 No Content
+
+### 9.5 Try deleting Option #2 again (should 400 or 404)
+DELETE {{host}}/api/meetings/{{meetingId}}/options/{{option2Id}}
+
+# Expected: 400 Bad Request
+# { "error": "Option not found in this meeting" }
+
+### 9.6 List slots after deleting Option #2
+GET {{host}}/api/meetings/{{meetingId}}/options
+
+# Only Option #1 should remain.
+
+### 9.7 Try voting on deleted Option #2 (should 400)
+POST {{host}}/api/meetings/options/{{option2Id}}/votes
+x-auth-token: {{token2}}
+Content-Type: application/json
+
+{ }
+
+### Expected: 400 Bad Request
+# { "error": "Option not found" }
+
+
+
+#######################################################################
+# 10. (Optional) Error cases for meeting retrieval
+#######################################################################
+
+### 10.1 Get a non‐existent meeting (should 404)
+GET {{host}}/api/meetings/000000000000000000000000
+
+# Expected: 404 Not Found
+# { "error": "Meeting not found" }
+
+### 10.2 Create meeting with invalid dates (should 400)
+POST {{host}}/api/meetings
+x-auth-token: {{token1}}
+Content-Type: application/json
+
+{
+  "title":    "Impossible",
+  "dateFrom": "2025-07-10",
+  "dateTo":   "2025-07-05"
+}
+
+### Expected: 400 Bad Request
+# { "error": "Invalid dateTo" }  (or similar validation message)
+

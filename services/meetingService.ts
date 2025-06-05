@@ -1,6 +1,7 @@
 import Meeting, {IMeetingDocument} from '../models/meeting';
 import TimeOption, {ITimeOptionDocument} from '../models/timeOption';
 import Vote, {IVoteDocument} from '../models/vote';
+import {findUserById} from "../models/user";
 
 /** Create a new meeting (caller must supply a valid ownerId) */
 export async function createMeeting(
@@ -15,17 +16,17 @@ export async function createMeeting(
 
 /** Retrieve a meeting by its ID */
 export async function getMeetingById(meetingId: string): Promise<IMeetingDocument | null> {
-    return Meeting.findById(meetingId).lean().exec();
+    return Meeting.findById(meetingId).exec();
 }
 
 /** List all time‐options (slots) for a given meeting */
 export async function getOptionsByMeeting(meetingId: string): Promise<ITimeOptionDocument[]> {
-    return TimeOption.find({meetingId}).lean().exec();
+    return TimeOption.find({meetingId}).exec();
 }
 
 /** Get a single TimeOption by its ID */
 export async function getOptionById(optionId: string): Promise<ITimeOptionDocument | null> {
-    return TimeOption.findById(optionId).lean().exec();
+    return TimeOption.findById(optionId).exec();
 }
 
 /** Get vote‐counts grouped by optionId (Map<optionId → count>) for an entire meeting */
@@ -109,7 +110,25 @@ export async function castVoteOnOption(
 
 /** List all Vote documents for a given slot (option) */
 export async function getVotesByOption(optionId: string): Promise<IVoteDocument[]> {
-    return Vote.find({optionId}).lean().exec();
+    return Vote.find({optionId}).exec();
+}
+
+export async function getVotesByOptionWithUserInformation(optionId: string) {
+    const votes = await getVotesByOption(optionId);
+
+    const enriched = await Promise.all(
+        votes.map(async (v) => {
+            const user = await findUserById(v.userId);
+            return {
+                voteId: v.id,
+                user: user
+                    ? {id: user.id, name: user.name, email: user.email}
+                    : {id: v.userId, name: null, email: null},
+                votedAt: v.votedAt
+            };
+        })
+    );
+    return enriched;
 }
 
 /** Delete a single vote by its ID */
