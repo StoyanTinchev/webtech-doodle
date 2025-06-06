@@ -1,3 +1,5 @@
+import { User } from "../types/auth";
+
 export interface IMeeting {
   id: string;
   title: string;
@@ -22,15 +24,15 @@ export interface IUser {
 }
 
 export interface IVote {
-  meetingId: string;  // identifies which meeting this vote belongs to
-  optionId: string;   // identifies which slot they picked
-  userId: string;     // references User.id
-  votedAt: Date;      // timestamp when this vote was cast
+  optionId: string; // identifies which slot they picked
+  user: User; // references User
+  votedAt: Date; // timestamp when this vote was cast
 }
 
 export interface VoteSummary {
   option: TimeOption;
   count: number;
+  votes: IVote[];
 }
 
 export interface MeetingWithVotesSummary {
@@ -51,4 +53,5 @@ export interface VotingOptionsListProps {
   votesSummary: VoteSummary[];
   meetingId: string;
   refreshAfterVote: () => Promise<void>;
+  hasVoted: boolean;
 }

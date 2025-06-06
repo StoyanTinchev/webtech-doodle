@@ -5,13 +5,13 @@ import { meetingService } from "../../services/meetingService";
 import VotingOption from "../VotingOption/VotingOption.tsx";
 
 const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
-                                                               votesSummary,
-                                                               refreshAfterVote
-                                                             }) => {
+  votesSummary,
+  refreshAfterVote,
+  hasVoted,
+}) => {
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
-  const [hasVoted, setHasVoted] = useState(false);
   const [successfulVotedOptionIds, setSuccessfulVotedOptionIds] = useState<
-      string[]
+    string[]
   >([]);
 
   const handleOptionSelect = (optionId: string) => {
@@ -43,7 +43,6 @@ const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
     }
 
     if (anySuccess) {
-      setHasVoted(true);
       // After we vote, we should refresh the meeting data:
       refreshAfterVote();
     }
@@ -54,24 +53,24 @@ const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
   }
 
   return (
-      <div>
-        <form className="voting-options-wrapper" onSubmit={handleSubmitVote}>
-          <ul className="voting-options-list">
-            {votesSummary.map((voteSummary) => (
-                <VotingOption
-                    key={voteSummary.option.id}
-                    voteSummary={voteSummary}
-                    handleOptionSelect={handleOptionSelect}
-                    hasVoted={hasVoted}
-                    successfulVotedOptionIds={successfulVotedOptionIds}
-                />
-            ))}
-          </ul>
-          <button type="submit" disabled={hasVoted}>
-            {hasVoted ? "You’ve Voted" : "Submit Your Vote"}
-          </button>
-        </form>
-      </div>
+    <div>
+      <form className="voting-options-wrapper" onSubmit={handleSubmitVote}>
+        <ul className="voting-options-list">
+          {votesSummary.map((voteSummary) => (
+            <VotingOption
+              key={voteSummary.option.id}
+              voteSummary={voteSummary}
+              handleOptionSelect={handleOptionSelect}
+              hasVoted={hasVoted}
+              successfulVotedOptionIds={successfulVotedOptionIds}
+            />
+          ))}
+        </ul>
+        <button type="submit" disabled={hasVoted}>
+          {hasVoted ? "You’ve Voted" : "Submit Your Vote"}
+        </button>
+      </form>
+    </div>
   );
 };
 

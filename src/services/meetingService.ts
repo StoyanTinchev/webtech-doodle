@@ -7,7 +7,9 @@ export const meetingService = {
   fetchMeetingWithSummary: async (
     meetingId: string
   ): Promise<MeetingWithVotesSummary> => {
-    const resp = await fetch(`${API_BASE}/meetings/${meetingId}`);
+    const resp = await fetch(
+      `${API_BASE}/meetings/${meetingId}?includeVotes=true`
+    );
     if (!resp.ok) {
       throw new Error("Failed to load meeting");
     }
@@ -30,6 +32,7 @@ export const meetingService = {
         hour: opt.hour,
       },
       count: opt.voteCount,
+      votes: opt.votes,
     }));
 
     return { meeting, votesSummary };
