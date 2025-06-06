@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
                 <section className="dashboard-meetings">
                     <h2 className="section-title">Your Meetings</h2>
                     {meetings.length === 0 ? (
-                        <p>You have no meetings yet.</p>
+                        <p className="no-meetings">You have no meetings yet.</p>
                     ) : (
                         <div className="meetings-list">
                             {meetings.map((m) => (

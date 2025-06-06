@@ -1,135 +1,70 @@
+@import "../../styles/theme.css";
 
-.meeting-container {
-    width: 100%;
-    padding: 20px;
-    font-family: 'Poppins', sans-serif;
-    font-style: italic;
-    color: white;
-    flex:1;
+.meeting-form-container {
+    background: var(--color-white);
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    flex: 1;
+    max-width: 400px;
 }
 
-.form-section {
-    margin-bottom: 20px;
+.meeting-form-title {
+    color: var(--color-primary);
+    font-size: var(--font-size-lg);
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    background: #fdecea;
+    color: #b71c1c;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    text-align: center;
+    border: 1px solid #f5c6cb;
+}
+
+.form-group {
     display: flex;
-    height: 100%;
-    padding-bottom: 50px;
     flex-direction: column;
-    justify-content: center;
-    box-sizing: border-box;
+    margin-bottom: 1rem;
 }
 
-.input-field {
-    width: 10rem;
-    padding: 6px;
-
-
-    border-radius: 4px;
-    border: 1px solid #9AB3F5;
-    font-family: 'Poppins', sans-serif;
+.form-label {
+    margin-bottom: 0.5rem;
+    color: var(--color-gray-800);
+    font-weight: 500;
 }
 
-.create-button, .add-option-button{
-    padding: 10px 20px;
-    margin-top: 20px;
-    background-color: #7579E7;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
+.form-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.create-button {
+    background: var(--color-primary);
+    color: var(--color-white);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    width: 100%;
+    transition: background 0.2s;
 }
 
 .create-button:hover:not(:disabled) {
-    background-color: #9AB3F5;
-}
-.create-button:disabled
-{
-    background-color: #b1b2e7;
-    cursor: default;
-
+    background: var(--color-primary-light);
 }
 
-
-.meetings-header {
-    margin-top: 20px;
-    font-size: 24px;
-    font-weight: 600;
-    color: #7579E7;
+.create-button:disabled {
+    background: var(--color-gray-300);
 }
-
-.time-inputs {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.time-inputs label {
-    font-weight: 500;
-    color: #7579E7;
-}
-
-.time-inputs input {
-    width: 48%;
-    padding: 8px;
-    border: 1px solid #9AB3F5;
-    border-radius: 4px;
-    font-family: 'Poppins', sans-serif;
-}
-
-.meetings-list {
-    display: flex;
-    gap: 20px;
-}
-.meeting-card {
-    background-color: #7579E7;
-    border-radius: 8px;
-    padding: 15px;
-    width: 100%; /* да заема цялата широчина на родителя */
-    max-width: 600px; /* но не повече от 600px */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0 auto; /* центрира го ако има фиксирана ширина */
-}
-/*
-.meeting-info {
-  margin-bottom: 10px;
-}
-
-.meeting-dates,
-.meeting-title,
-.meeting-owner {
-  margin-bottom: 8px;
-
-}
-
-.meeting-times {
-  font-size: 14px;
-  color: #ffffff;
-}
-*/
-.label-input{
-    display: flex;
-    gap:10px;
-    padding: 20px;
-    align-items: center;
-
-}
-.label-input input{
-    flex: 1;
-}
-
-.label-input textarea{
-    flex: 1;
-    resize: none;
-    width: 100%;
-    min-height: 5rem;
-}
-
-.descCont{
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
-}
-
-

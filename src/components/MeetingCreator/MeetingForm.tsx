@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import React, {useState} from "react";
+import {format} from "date-fns";
+import {useNavigate} from "react-router-dom";
 import "./MeetingForm.css";
 
 interface MeetingFormProps {
@@ -60,18 +60,21 @@ const MeetingForm: React.FC<MeetingFormProps> = ({
     };
 
     return (
-        <div className="meeting-form">
-            <h2>New Meeting Details</h2>
+        <div className="meeting-form-container">
+            <h2 className="meeting-form-title">New Meeting Details</h2>
             {error && <div className="error-message">{error}</div>}
 
-            <label>Meeting Title:</label>
-            <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter meeting title"
-            />
-            <button onClick={handleCreate} disabled={loading}>
+            <div className="form-group">
+                <label className="form-label">Meeting Title:</label>
+                <input
+                    className="form-input"
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter meeting title"
+                />
+            </div>
+            <button className="create-button" onClick={handleCreate} disabled={loading}>
                 {loading ? "Creating..." : "Create Meeting"}
             </button>
         </div>

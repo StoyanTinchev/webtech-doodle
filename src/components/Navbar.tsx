@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "./Navbar.css";  // ensure this is imported
 
 const Navbar: React.FC = () => {
     const { isAuthenticated, logout, user } = useAuth();
 
     const authLinks = (
-        <ul>
+        <ul className="navbar-links">
             <li>
                 <Link to="/dashboard">Dashboard</Link>
             </li>
@@ -28,7 +29,7 @@ const Navbar: React.FC = () => {
     );
 
     const guestLinks = (
-        <ul>
+        <ul className="navbar-links">
             <li>
                 <Link to="/register">Create Account</Link>
             </li>
@@ -39,20 +40,16 @@ const Navbar: React.FC = () => {
     );
 
     return (
-        <nav className="navbar" style={{ padding: "1rem", background: "#1e1e1e", color: "white" }}>
-            <h1>
-                <Link to="/" style={{ color: "white", textDecoration: "none" }}>
-                    Doodle Calendar
-                </Link>
-            </h1>
-            {isAuthenticated ? (
-                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                    <span style={{ marginRight: "1rem" }}>Hello, {user?.name}</span>
-                    {authLinks}
-                </div>
-            ) : (
-                guestLinks
-            )}
+        <nav className="navbar-container">
+            <div className="navbar-brand">
+                <Link to="/">Doodle Calendar</Link>
+            </div>
+            <div className="navbar-right">
+                {isAuthenticated && (
+                    <span className="navbar-user">Hello, {user?.name}</span>
+                )}
+                {isAuthenticated ? authLinks : guestLinks}
+            </div>
         </nav>
     );
 };

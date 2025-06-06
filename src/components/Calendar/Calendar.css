@@ -1,74 +1,94 @@
+@import "../../styles/theme.css";
+
 .calendarContainer {
+  flex: 1;
   display: flex;
   justify-content: center;
-  margin-top: 20px; 
-  flex:1;
-}
-.calendar h1{
-  color: rgb(73, 61, 158);
 }
 
 .calendar {
-  /* width: ;   */
-  /* max-width: 900px; */
-  margin: 20px 20px;
-  padding: 30px;
-  border: 3px solid #9AB3F5; 
-  border-radius: 12px;
-  background-color: #A3D8F4;  
+  background: var(--color-white);
+  border: 2px solid var(--color-primary-light);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar h1 {
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  text-align: center;
 }
 
 .navigate-date {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
+}
+
+.navigate-date h2 {
+  color: var(--color-gray-800);
+  font-size: var(--font-size-lg);
+  margin: 0;
 }
 
 .buttons {
   display: flex;
-  gap: 10px;
+  gap: 0.5rem;
+}
+
+.buttons button {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  transition: background 0.2s;
+}
+
+.buttons button:hover {
+  background: var(--color-primary-light);
 }
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #7579E7;  
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-gray-700);
+  font-weight: 600;
+}
+
+.weekdays span {
+  text-align: center;
 }
 
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 0.25rem;
 }
 
 .days span {
   display: block;
   text-align: center;
-  padding: 15px;
+  padding: 0.75rem 0;
   cursor: pointer;
-  border-radius: 4px;
-  min-width: 30px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.days span:hover {
+  background: var(--color-gray-100);
+  transform: translateY(-1px);
 }
 
 .selected-day {
-  background-color: #7579E7;
-  color: white;
-}
-
-.navigate-date h2 {
-  color: #7579E7;  
-}
-
-.buttons i {
-  cursor: pointer;
-  font-size: 1.5em;
-  color: #7579E7;
-}
-
-.buttons i:hover {
-  color: #B9FFFC;  
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }

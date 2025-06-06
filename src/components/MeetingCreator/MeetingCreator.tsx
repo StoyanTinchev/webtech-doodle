@@ -8,21 +8,17 @@ const MeetingCreator: React.FC = () => {
     const [endDate, setEndDate] = useState<Date | null>(null);
 
     return (
-        <div className="MeetingCreator">
-            <h1>Create Your Meeting</h1>
-            <div className="MeetingCreatorContainer">
+        <div className="meeting-creator-page">
+            <h1 className="meeting-creator-title">Create Your Meeting</h1>
+            <div className="meeting-creator-container">
                 <Calendar
                     startDate={startDate}
                     endDate={endDate}
                     setStartDate={setStartDate}
                     setEndDate={setEndDate}
                 />
-
                 {startDate && endDate && (
-                    <MeetingForm
-                        startDate={startDate}
-                        endDate={endDate}
-                    />
+                    <MeetingForm startDate={startDate} endDate={endDate} />
                 )}
             </div>
         </div>

@@ -1,0 +1,58 @@
+/* src/components/MeetingPage/MeetingPage.css */
+@import "../../styles/theme.css";
+
+.meeting-page-container {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    padding: 2rem;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.meeting-page-header h1 {
+    font-size: var(--font-size-xl);
+    color: var(--color-gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.meeting-page-header p {
+    margin-bottom: 0.25rem;
+    color: var(--color-gray-700);
+    font-size: var(--font-size-base);
+}
+
+.meeting-label {
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.meeting-separator {
+    border: none;
+    border-top: 1px solid var(--color-gray-200);
+    margin: 1.5rem 0;
+}
+
+/* Style the “+ Add Option” and the date/hour inputs below */
+.meeting-page-container button {
+    background: var(--color-secondary);
+    color: var(--color-gray-900);
+}
+.meeting-page-container button:hover {
+    background: #ffb300; /* slightly darker amber */
+}
+
+.meeting-page-container label {
+    color: var(--color-gray-800);
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.meeting-page-container input[type="date"],
+.meeting-page-container select {
+    padding: 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    margin-right: 1rem;
+    font-size: var(--font-size-base);
+}
