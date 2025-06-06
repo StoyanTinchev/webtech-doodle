@@ -24,7 +24,7 @@ export interface IUser {
 }
 
 export interface IVote {
-  optionId: string; // identifies which slot they picked
+  voteId: string; // identifies which slot they picked
   user: User; // references User
   votedAt: Date; // timestamp when this vote was cast
 }
@@ -44,14 +44,15 @@ export interface VotingOptionProps {
   voteSummary: VoteSummary;
   handleOptionSelect: (optionId: string) => void;
   selectedOptionIds?: string[];
-  hasVoted: boolean;
+  hasVoted: string[];
   successfulVotedOptionIds: string[];
   isVoted?: boolean;
+  refreshAfterVote: () => Promise<void>;
 }
 
 export interface VotingOptionsListProps {
   votesSummary: VoteSummary[];
   meetingId: string;
   refreshAfterVote: () => Promise<void>;
-  hasVoted: boolean;
+  hasVoted: string[];
 }

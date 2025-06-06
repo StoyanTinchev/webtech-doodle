@@ -24,6 +24,7 @@ export const meetingService = {
       dateTo: data.dateTo,
     };
 
+    console.log(data.options);
     const votesSummary = data.options.map((opt: any) => ({
       option: {
         id: opt.optionId,
@@ -34,7 +35,6 @@ export const meetingService = {
       count: opt.voteCount,
       votes: opt.votes,
     }));
-
     return { meeting, votesSummary };
   },
 
@@ -84,5 +84,21 @@ export const meetingService = {
       throw new Error(err.error || "Failed to cast vote");
     }
     return resp.json();
+  },
+
+  removeVote: async (optionId: string, voteId: string): Promise<void> => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not logged in");
+    const resp = await fetch(
+      `${API_BASE}/meetings/options/${optionId}/votes/${voteId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token,
+        },
+      }
+    );
+   
   },
 };

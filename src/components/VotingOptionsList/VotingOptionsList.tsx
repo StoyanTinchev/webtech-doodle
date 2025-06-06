@@ -15,7 +15,6 @@ const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
   >([]);
 
   const handleOptionSelect = (optionId: string) => {
-    if (hasVoted) return;
     if (selectedOptionIds.includes(optionId)) {
       setSelectedOptionIds(selectedOptionIds.filter((id) => id !== optionId));
     } else {
@@ -63,12 +62,11 @@ const VotingOptionsList: React.FC<VotingOptionsListProps> = ({
               handleOptionSelect={handleOptionSelect}
               hasVoted={hasVoted}
               successfulVotedOptionIds={successfulVotedOptionIds}
+              refreshAfterVote={refreshAfterVote}
             />
           ))}
         </ul>
-        <button type="submit" disabled={hasVoted}>
-          {hasVoted ? "You’ve Voted" : "Submit Your Vote"}
-        </button>
+        <button type="submit">{"Submit Your Vote"}</button>
       </form>
     </div>
   );
