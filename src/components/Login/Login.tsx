@@ -5,13 +5,12 @@ import "./Login.css";
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const { login, isAuthenticated, authError } = useAuth();
+    const { login, isAuthenticated, authError, clearError } = useAuth();
     const [credentials, setCredentials] = useState({
         email: "",
         password: ""
     });
     const [loading, setLoading] = useState(false);
-    const [localError, setLocalError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -19,7 +18,19 @@ const Login: React.FC = () => {
         }
     }, [isAuthenticated, navigate]);
 
+    // Clear errors when component mounts (only once)
+    useEffect(() => {
+        if (clearError) {
+            clearError();
+        }
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Clear error when user starts typing
+        if (authError && clearError) {
+            clearError();
+        }
+        
         setCredentials({
             ...credentials,
             [e.target.name]: e.target.value
@@ -29,13 +40,12 @@ const Login: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setLocalError(null);
 
         try {
             await login(credentials);
             navigate("/dashboard");
         } catch (err: any) {
-            setLocalError(err.message);
+            // Error is handled in AuthContext
         } finally {
             setLoading(false);
         }
@@ -47,7 +57,6 @@ const Login: React.FC = () => {
                 <h2 className="login-title">Login to Doodle Calendar</h2>
 
                 {authError && <div className="error-message">{authError}</div>}
-                {localError && <div className="error-message">{localError}</div>}
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">

@@ -5,13 +5,12 @@ import "./Register.css";
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
-    const { register, isAuthenticated, authError } = useAuth();
+    const { register, isAuthenticated, authError, clearError } = useAuth();
     const [credentials, setCredentials] = useState({
         name: "",
         email: "",
         password: ""
     });
-    const [localError, setLocalError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -20,7 +19,19 @@ const Register: React.FC = () => {
         }
     }, [isAuthenticated, navigate]);
 
+    // Clear errors when component mounts (only once)
+    useEffect(() => {
+        if (clearError) {
+            clearError();
+        }
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Clear error when user starts typing
+        if (authError && clearError) {
+            clearError();
+        }
+        
         setCredentials({
             ...credentials,
             [e.target.name]: e.target.value
@@ -30,13 +41,12 @@ const Register: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setLocalError(null);
 
         try {
             await register(credentials);
             navigate("/dashboard");
         } catch (err: any) {
-            setLocalError(err.message);
+            // Error is handled in AuthContext
         } finally {
             setLoading(false);
         }
@@ -48,7 +58,6 @@ const Register: React.FC = () => {
                 <h2 className="register-title">Join Doodle Calendar</h2>
 
                 {authError && <div className="error-message">{authError}</div>}
-                {localError && <div className="error-message">{localError}</div>}
 
                 <form onSubmit={handleSubmit} className="register-form">
                     <div className="form-group">
