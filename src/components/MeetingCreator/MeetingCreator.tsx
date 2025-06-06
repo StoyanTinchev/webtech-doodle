@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Calendar from "../Calendar/Calendar";
-import MeetingForm from "./MeetingForm";
+import MeetingForm from "../MeetingForm/MeetingForm";
 import "./MeetingCreator.css";
 
 const MeetingCreator: React.FC = () => {
