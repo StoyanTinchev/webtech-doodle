@@ -5,8 +5,8 @@ export interface IMeeting {
   title: string;
   description?: string;
   ownerId: string;
-  dateFrom: string; // ISO date start
-  dateTo: string; // ISO date end
+  dateFrom: string; 
+  dateTo: string;
 }
 
 export interface TimeOption {
@@ -46,7 +46,6 @@ export interface VotingOptionProps {
   selectedOptionIds?: string[];
   hasVoted: string[];
   successfulVotedOptionIds: string[];
-  isVoted?: boolean;
   refreshAfterVote: () => Promise<void>;
 }
 

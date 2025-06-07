@@ -6,12 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 const VotingOption: React.FC<VotingOptionProps> = (props) => {
   const [isChecked, setIsChecked] = useState(false);
   const { user } = useAuth();
-  useEffect(() => {
-    if (props.isVoted) {
-      setIsChecked(true);
-    }
-  }, [props.isVoted]);
-
+ 
   const handleCheckboxChange = () => {
     setIsChecked((prev) => !prev);
     props.handleOptionSelect(props.voteSummary.option.id);
@@ -31,7 +26,6 @@ const VotingOption: React.FC<VotingOptionProps> = (props) => {
       );
     }
   };
-  console.log(props.hasVoted, props.voteSummary.option.id);
   return (
     <li className="voting-option-card">
       <label className="voting-option-content">

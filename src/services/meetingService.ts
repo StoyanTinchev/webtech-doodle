@@ -24,7 +24,6 @@ export const meetingService = {
       dateTo: data.dateTo,
     };
 
-    console.log(data.options);
     const votesSummary = data.options.map((opt: any) => ({
       option: {
         id: opt.optionId,
@@ -99,6 +98,5 @@ export const meetingService = {
         },
       }
     );
-   
   },
 };

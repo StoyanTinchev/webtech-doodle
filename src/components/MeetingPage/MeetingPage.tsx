@@ -21,8 +21,6 @@ const MeetingPage: React.FC = () => {
   meetingData?.votesSummary.forEach((el) => {
     console.log(el);
     el?.votes.forEach((vote) => {
-      console.log(vote.user.id, user?.id);
-
       if (vote.user.id === user?.id) {
         hasVoted.push(el.option.id);
       }
@@ -112,7 +110,7 @@ const MeetingPage: React.FC = () => {
         refreshAfterVote={fetchMeeting}
         hasVoted={hasVoted}
       />
-      {addingOption ? (
+      {!addingOption ? (
         <button onClick={handleAddOptionClick}> Add Option</button>
       ) : (
         <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
