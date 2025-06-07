@@ -15,11 +15,11 @@ const MeetingPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedHour, setSelectedHour] = useState<number>(0);
   const [submittingOption, setSubmittingOption] = useState(false);
+  const [ownerName, setOwnerName] = useState("");
 
   const { user } = useAuth();
   const hasVoted: string[] = [];
   meetingData?.votesSummary.forEach((el) => {
-    console.log(el);
     el?.votes.forEach((vote) => {
       if (vote.user.id === user?.id) {
         hasVoted.push(el.option.id);
@@ -34,6 +34,10 @@ const MeetingPage: React.FC = () => {
     try {
       const data = await meetingService.fetchMeetingWithSummary(id);
       setMeetingData(data);
+      const userInfo = await meetingService.getUserInformation(
+        data.meeting.ownerId
+      );
+      setOwnerName(userInfo.name);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -43,7 +47,6 @@ const MeetingPage: React.FC = () => {
 
   useEffect(() => {
     fetchMeeting();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleAddOptionClick = () => {
@@ -96,7 +99,7 @@ const MeetingPage: React.FC = () => {
         <h1>{meetingData.meeting.title}</h1>
         <p>
           <span className="meeting-label">Owner:</span>{" "}
-          <strong>{meetingData.meeting.ownerId}</strong>
+          <strong>{ownerName || ""}</strong>
         </p>
         <p>
           <span className="meeting-label">Range:</span>{" "}

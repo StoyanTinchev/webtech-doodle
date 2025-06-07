@@ -88,15 +88,32 @@ export const meetingService = {
   removeVote: async (optionId: string, voteId: string): Promise<void> => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Not logged in");
-    await fetch(
-      `${API_BASE}/meetings/options/${optionId}/votes/${voteId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-      }
-    );
+    await fetch(`${API_BASE}/meetings/options/${optionId}/votes/${voteId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token,
+      },
+    });
+  },
+
+  getUserInformation: async (
+    userId: string
+  ): Promise<{ id: string; name: string; email: string }> => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not logged in");
+
+    const resp = await fetch(`${API_BASE}/auth/user/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token,
+      },
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || "Failed to get user info");
+    }
+    return resp.json();
   },
 };
