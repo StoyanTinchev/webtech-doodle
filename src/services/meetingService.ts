@@ -88,7 +88,7 @@ export const meetingService = {
   removeVote: async (optionId: string, voteId: string): Promise<void> => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Not logged in");
-    const resp = await fetch(
+    await fetch(
       `${API_BASE}/meetings/options/${optionId}/votes/${voteId}`,
       {
         method: "DELETE",
