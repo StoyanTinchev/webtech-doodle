@@ -133,4 +133,24 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
     }
 });
 
+router.get('/user/:userId', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.params.userId;
+        const user = await findUserById(userId);
+        if (!user) {
+            res.status(404).json({error: 'User not found'});
+            return;
+        }
+
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email
+        });
+    } catch (error: any) {
+        console.error('Get user error:', error);
+        res.status(500).json({error: 'Server error'});
+    }
+})
+
 export default router;

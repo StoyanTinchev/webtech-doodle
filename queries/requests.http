@@ -32,6 +32,10 @@ Content-Type: application/json
 > {% client.global.set("token1", response.body.token); %}
 
 
+### 1.3 Get user information
+GET {{host}}/api/auth/user/684416eb693862ce68016ec4
+Content-Type: application/json
+
 
 #######################################################################
 # 2. User #1 creates a meeting
