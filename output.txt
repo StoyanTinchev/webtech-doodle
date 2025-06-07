@@ -1,0 +1,1177 @@
+
+./middleware/authMiddleware.ts:
+-------------------------
+import {Request, Response, NextFunction} from 'express';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
+
+export function requireAuth(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void {
+    const token = req.header('x-auth-token');
+    if (!token) {
+        res.status(401).json({error: 'No token provided'});
+        return;
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        (req as any).userId = decoded.id;
+        next();
+    } catch {
+        res.status(401).json({error: 'Invalid token'});
+        return;
+    }
+}
+
+-------------------------
+
+
+./models/meeting.ts:
+-------------------------
+import mongoose, {Document, Schema} from 'mongoose';
+
+export interface IMeeting {
+    title: string;
+    ownerId: string;
+    dateFrom: string;      // ISO8601 string
+    dateTo: string;        // ISO8601 string
+}
+
+export interface IMeetingDocument extends IMeeting, Document {
+    _id: mongoose.Types.ObjectId;
+}
+
+const meetingSchema = new Schema(
+    {
+        title: {type: String, required: true},
+        ownerId: {type: String, required: true},   // reference to a User.id
+        dateFrom: {type: String, required: true},
+        dateTo: {type: String, required: true}
+    },
+    {
+        versionKey: false,
+        toJSON: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        },
+        toObject: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        }
+    }
+);
+
+meetingSchema.virtual('id').get(function (this: any) {
+    return this._id.toHexString();
+});
+
+const Meeting = mongoose.model<IMeetingDocument>('Meeting', meetingSchema);
+export default Meeting;
+
+-------------------------
+
+
+./models/vote.ts:
+-------------------------
+import mongoose, {Document, Schema} from 'mongoose';
+
+export interface IVote {
+    meetingId: string;  // identifies which meeting this vote belongs to
+    optionId: string;   // identifies which slot they picked
+    userId: string;     // references User.id
+    votedAt: Date;      // timestamp when this vote was cast
+}
+
+export interface IVoteDocument extends IVote, Document {
+    _id: mongoose.Types.ObjectId;
+}
+
+const voteSchema = new Schema(
+    {
+        meetingId: {type: String, required: true},
+        optionId: {type: String, required: true},
+        userId: {type: String, required: true}
+    },
+    {
+        versionKey: false,
+        timestamps: {createdAt: 'votedAt', updatedAt: false},
+        toJSON: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        },
+        toObject: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        }
+    }
+);
+
+voteSchema.virtual('id').get(function (this: any) {
+    return this._id.toHexString();
+});
+
+const Vote = mongoose.model<IVoteDocument>('Vote', voteSchema);
+export default Vote;
+
+-------------------------
+
+
+./models/timeOption.ts:
+-------------------------
+import mongoose, {Document, Schema} from 'mongoose';
+
+export interface ITimeOption {
+    meetingId: string;
+    date: string;    // ISO8601 date string
+    hour: number;    // 0–23
+}
+
+export interface ITimeOptionDocument extends ITimeOption, Document {
+    _id: mongoose.Types.ObjectId;
+}
+
+const timeOptionSchema = new Schema(
+    {
+        meetingId: {type: String, required: true},
+        date: {type: String, required: true},
+        hour: {type: Number, required: true, min: 0, max: 23}
+    },
+    {
+        versionKey: false,
+        toJSON: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        },
+        toObject: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                return ret;
+            }
+        }
+    }
+);
+
+timeOptionSchema.virtual('id').get(function (this: any) {
+    return this._id.toHexString();
+});
+
+const TimeOption = mongoose.model<ITimeOptionDocument>(
+    'TimeOption',
+    timeOptionSchema
+);
+export default TimeOption;
+
+-------------------------
+
+
+./models/user.ts:
+-------------------------
+import mongoose, {Document, Schema} from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+export interface IUser {
+    name: string;
+    email: string;
+    passwordHash: string;
+    registrationDate: Date;
+}
+
+export interface IUserDocument extends IUser, Document {
+    _id: mongoose.Types.ObjectId;
+}
+
+const userSchema = new Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'Name is required'],
+            trim: true
+        },
+        email: {
+            type: String,
+            required: [true, 'Email is required'],
+            unique: true,
+            lowercase: true,
+            trim: true
+        },
+        passwordHash: {
+            type: String,
+            required: [true, 'Password is required'],
+            minlength: 6
+        },
+        registrationDate: {
+            type: Date,
+            default: Date.now
+        }
+    },
+    {
+        versionKey: false,
+        timestamps: true,
+        toJSON: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                delete ret.passwordHash;
+                return ret;
+            }
+        },
+        toObject: {
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret._id;
+                delete ret.passwordHash;
+                return ret;
+            }
+        }
+    }
+);
+
+userSchema.virtual('id').get(function (this: any) {
+    return this._id.toHexString();
+});
+
+const UserModel = mongoose.model<IUserDocument>('User', userSchema);
+export default UserModel;
+
+// ----------------------------------------------------------------------------
+// Helper functions to be used in routes/auth.ts
+// ----------------------------------------------------------------------------
+
+export async function findUserByEmail(
+    email: string
+): Promise<IUserDocument | null> {
+    try {
+        return await UserModel.findOne({email}).exec();
+    } catch (error) {
+        console.error('Error finding user by email:', error);
+        throw error;
+    }
+}
+
+export async function findUserById(
+    id: string
+): Promise<IUserDocument | null> {
+    try {
+        return await UserModel.findById(id).exec();
+    } catch (error) {
+        console.error('Error finding user by id:', error);
+        throw error;
+    }
+}
+
+export async function createUser(
+    name: string,
+    email: string,
+    plainPassword: string
+): Promise<IUserDocument> {
+    try {
+        // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(plainPassword, salt);
+
+        const user = new UserModel({
+            name,
+            email,
+            passwordHash
+        });
+        return await user.save();
+    } catch (error: any) {
+        console.error('Error creating user:', error);
+        throw error;
+    }
+}
+
+-------------------------
+
+
+./package.json:
+-------------------------
+{
+  "name": "webtech-doodle",
+  "version": "1.0.0",
+  "main": "server.ts",
+  "scripts": {
+    "start": "ts-node server.ts"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StoyanTinchev/webtech-doodle.git"
+  },
+  "author": "Stoyan Tinchev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/StoyanTinchev/webtech-doodle/issues"
+  },
+  "homepage": "https://github.com/StoyanTinchev/webtech-doodle#readme",
+  "description": "",
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "mongoose": "^8.14.0",
+    "jsonwebtoken": "9.0.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0",
+    "@types/node": "^16.11.6",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^8.5.5"
+  }
+}
+
+-------------------------
+
+
+./db/index.ts:
+-------------------------
+import mongoose from 'mongoose';
+
+// search fields that are already existing in the db
+mongoose.set('strictQuery', false);
+
+
+export const connectDB = async (mongoUri: string | undefined) => {
+  try {
+    if (!mongoUri) {
+        console.error('MongoDB URI is not defined. Please set the MONGO_URI environment variable.');
+        process.exit(1);
+    }
+    await mongoose.connect(mongoUri);
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
+
+export const disconnectDB = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
+  } catch (err) {
+    console.error('Error closing MongoDB connection:', err);
+  }
+};
+
+
+-------------------------
+
+
+./controllers/meetingCtrl.ts:
+-------------------------
+import {Request, Response} from 'express';
+import {validationResult} from 'express-validator';
+import * as meetingService from '../services/meetingService';
+
+export async function createMeeting(
+    req: Request,
+    res: Response
+): Promise<void> {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({error: errors.array()[0].msg});
+        return;
+    }
+
+    const {title, ownerId, dateFrom, dateTo} = req.body;
+    try {
+        const meeting = await meetingService.createMeeting(title, ownerId, dateFrom, dateTo);
+        res.status(201).json(meeting);
+    } catch (err: any) {
+        res.status(400).json({error: err.message});
+    }
+}
+
+/** Get all meetings where ownerId = :userId */
+export async function getMeetingsByUser(
+    req: Request,
+    res: Response
+): Promise<void> {
+    const userId = req.params.userId;
+
+    try {
+        const meetings = await meetingService.getMeetingsByOwner(userId);
+        res.json(meetings);
+    } catch (err: any) {
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
+// ?includeVotes=ture
+export async function getMeeting(req: Request, res: Response): Promise<void> {
+    const meetingId = req.params.id;
+
+    const meeting = await meetingService.getMeetingById(meetingId);
+    if (!meeting) {
+        res.status(404).json({error: 'Meeting not found'});
+        return;
+    }
+
+    const includeVotes = req.query.includeVotes === 'true';
+
+    // 1) fetch all slots for this meeting
+    const options = await meetingService.getOptionsByMeeting(meetingId);
+
+    // 2) fetch vote counts per slot
+    const counts = await meetingService.getVoteCountsByOption(meetingId);
+
+    // 3) merge into the desired shape
+    const optionsWithCounts = await Promise.all(
+        options.map(async (opt) => {
+            const base: any = {
+                optionId: opt.id,
+                date: opt.date,
+                hour: opt.hour,
+                voteCount: counts.get(opt.id) || 0,
+                _links: {
+                    self: `/api/options/${opt.id}`,
+                    votes: `/api/options/${opt.id}/votes`
+                }
+            };
+
+            if (includeVotes) {
+                // fetch all votes for this option if requested
+                base.votes = await meetingService.getVotesByOptionWithUserInformation(opt.id);
+            }
+
+            return base;
+        })
+    );
+
+    // Respond with the meeting + embedded options array
+    res.json({
+        meetingId: meeting.id,
+        title: meeting.title,
+        ownerId: meeting.ownerId,
+        dateFrom: meeting.dateFrom,
+        dateTo: meeting.dateTo,
+        options: optionsWithCounts
+    });
+}
+
+// Notes:
+//
+// The request body for POST /api/meetings now must include a valid ownerId (e.g. the authenticated user’s id).
+// GET /api/meetings/:id by default returns:
+// {
+//   "meetingId": "...",
+//   "title": "...",
+//   "ownerId": "...",
+//   "dateFrom": "2025-06-10",
+//   "dateTo": "2025-06-20",
+//   "options": [
+//     {
+//       "optionId": "abc",
+//       "date": "2025-06-11",
+//       "hour": 14,
+//       "voteCount": 3,
+//       "_links": { "self": "/api/options/abc", "votes": "/api/options/abc/votes" }
+//     },
+//     ...
+//   ]
+// }
+// If appended ?includeVotes=true, then each option object also has a "votes":[ { voteId, userId, votedAt }, … ] array.
+
+-------------------------
+
+
+./controllers/voteCtrl.ts:
+-------------------------
+import {Request, Response} from 'express';
+import {validationResult} from 'express-validator';
+import * as meetingService from '../services/meetingService';
+import {findUserById} from "../models/user";
+
+/** Cast (or switch) a vote on a given slot */
+export async function castVoteOnOption(req: Request, res: Response): Promise<void> {
+    const optionId = req.params.optionId;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({error: errors.array()[0].msg});
+        return;
+    }
+
+    // get userId from the authenticated token:
+    const userId = (req as any).userId as string;
+
+    try {
+        const vote = await meetingService.castVoteOnOption(optionId, userId);
+        res.status(201).json({
+            voteId: vote.id,
+            meetingId: vote.meetingId,
+            optionId: vote.optionId,
+            userId: vote.userId,
+            votedAt: vote.votedAt
+        });
+    } catch (err: any) {
+        res.status(400).json({error: err.message});
+    }
+}
+
+/** List all votes for a given slot */
+export async function listVotesByOption(req: Request, res: Response): Promise<void> {
+    const optionId = req.params.optionId;
+
+    const votes = await meetingService.getVotesByOptionWithUserInformation(optionId);
+
+    res.json(votes);
+}
+
+/** Delete a single vote by ID */
+export async function deleteVote(req: Request, res: Response): Promise<void> {
+    const {voteId, optionId} = req.params;
+
+    // First, check that the vote actually belongs to this option:
+    const allVotes = await meetingService.getVotesByOption(optionId);
+    const found = allVotes.find(v => v.id === voteId);
+    if (!found) {
+        res.status(404).json({error: 'Vote not found for this option'});
+        return;
+    }
+
+    try {
+        await meetingService.deleteVoteById(voteId);
+        res.status(204).send();
+    } catch (err: any) {
+        res.status(400).json({error: err.message});
+    }
+}
+
+-------------------------
+
+
+./controllers/optionCtrl.ts:
+-------------------------
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import * as meetingService from '../services/meetingService';
+
+/** Add a new time‐slot under a given meeting */
+export async function addOption(req: Request, res: Response): Promise<void> {
+    const meetingId = req.params.meetingId;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ error: errors.array()[0].msg });
+        return;
+    }
+
+    const { date, hour } = req.body;
+    try {
+        const option = await meetingService.addTimeOption(meetingId, date, hour);
+        res.status(201).json({
+            optionId: option.id,
+            date: option.date,
+            hour: option.hour,
+            voteCount: 0,
+            _links: {
+                self: `/api/meetings/options/${option.id}`,
+                votes: `/api/meetings/options/${option.id}/votes`
+            }
+        });
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+}
+
+/** List all slots for a meeting (each with voteCount) */
+export async function listOptions(req: Request, res: Response): Promise<void> {
+    const meetingId = req.params.meetingId;
+
+  // If the meeting itself doesn’t exist, getOptionsByMeeting will return an empty array.
+    const options = await meetingService.getOptionsByMeeting(meetingId);
+    const counts = await meetingService.getVoteCountsByOption(meetingId);
+
+    const result = options.map(opt => ({
+        optionId: opt.id,
+        date: opt.date,
+        hour: opt.hour,
+        voteCount: counts.get(opt.id) || 0,
+        _links: {
+            self: `/api/options/${opt.id}`,
+            votes: `/api/options/${opt.id}/votes`
+        }
+    }));
+
+    res.json(result);
+}
+
+/** Get a single slot by its ID (with voteCount + links) */
+export async function getOptionById(req: Request, res: Response): Promise<void> {
+    const optionId = req.params.optionId;
+
+    const opt = await meetingService.getOptionById(optionId);
+
+    if (!opt) {
+        res.status(404).json({ error: 'Option not found' });
+        return;
+    }
+
+    // Get how many votes this slot has
+    const counts = await meetingService.getVoteCountsByOption(opt.meetingId);
+    const count = counts.get(optionId) || 0;
+
+    res.json({
+        optionId: opt.id,
+        meetingId: opt.meetingId,
+        date: opt.date,
+        hour: opt.hour,
+        voteCount: count,
+        _links: {
+            votes: `/api/options/${opt.id}/votes`
+        }
+    });
+}
+
+/** Delete one slot (and all its votes) */
+export async function deleteOption(req: Request, res: Response): Promise<void> {
+    const meetingId = req.params.meetingId;
+    const optionId = req.params.optionId;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ error: errors.array()[0].msg });
+        return;
+    }
+
+    try {
+        await meetingService.deleteTimeOption(meetingId, optionId);
+        res.status(204).send();
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+}
+
+-------------------------
+
+
+./server.ts:
+-------------------------
+import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import authRouter from './routes/auth';
+import meetingsRouter from './routes/meetings';
+import optionsRouter from './routes/options';
+import votesRouter from './routes/votes';
+import {connectDB, disconnectDB} from './db';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const mongoUri = process.env.mongoUri;
+
+// Rate limiting: max 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    message: {error: 'Too many requests, please try again later.'}
+});
+app.use(limiter);
+
+// CORS + JSON parsing
+app.use(cors({
+    credentials: true,
+}));
+app.use(express.json());
+
+// Mount routers
+app.use('/api/auth', authRouter);
+app.use('/api/meetings', meetingsRouter);
+app.use('/api/meetings', optionsRouter);
+app.use('/api/meetings', votesRouter);
+
+// Global error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Unhandled error:', err.stack);
+    res.status(500).json({error: err.message});
+});
+
+// Connect to Mongo, then start server
+connectDB(mongoUri)
+    .then(() => {
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch(err => {
+        console.error('Failed to connect to DB, exiting.', err);
+        process.exit(1);
+    });
+
+process.on('SIGINT', () => {
+    disconnectDB().then(() => process.exit(0));
+});
+
+-------------------------
+
+
+./routes/votes.ts:
+-------------------------
+import {Router} from 'express';
+import {param} from 'express-validator';
+import {requireAuth} from '../middleware/authMiddleware';
+import * as voteCtrl from '../controllers/voteCtrl';
+
+const router = Router();
+
+// Cast a new vote on a given slot
+router.post(
+    '/options/:optionId/votes',
+    requireAuth,
+    [
+        param('optionId').isMongoId().withMessage('Invalid option ObjectID')
+    ],
+    voteCtrl.castVoteOnOption
+);
+
+// List all votes for a slot
+router.get(
+    '/options/:optionId/votes',
+    [param('optionId').isMongoId().withMessage('Invalid option ObjectID')],
+    voteCtrl.listVotesByOption
+);
+
+// Delete one vote by ID
+router.delete(
+    '/options/:optionId/votes/:voteId',
+    [
+        param('optionId').isMongoId().withMessage('Invalid option ObjectID'),
+        param('voteId').isMongoId().withMessage('Invalid vote ObjectID')
+    ],
+    voteCtrl.deleteVote
+);
+
+export default router;
+
+-------------------------
+
+
+./routes/meetings.ts:
+-------------------------
+import {Request, Response, Router} from 'express';
+import {body, param} from 'express-validator';
+import * as meetingCtrl from '../controllers/meetingCtrl';
+import {requireAuth} from '../middleware/authMiddleware';
+
+const router = Router();
+
+router.post(
+    '/',
+    requireAuth,
+    [
+        body('title').isString().notEmpty(),
+        body('dateFrom').isISO8601(),
+        body('dateTo')
+            .isISO8601()
+            .custom((val, {req}) => new Date(val) >= new Date(req.body.dateFrom))
+    ],
+    (req: Request, res: Response) => {
+        // override ownerId from token rather than client‐provided JSON
+        (req.body as any).ownerId = (req as any).userId;
+        return meetingCtrl.createMeeting(req, res);
+    }
+);
+
+router.get(
+    '/user/:userId',
+    [param('userId').isMongoId().withMessage('Invalid user ObjectID')],
+    meetingCtrl.getMeetingsByUser
+);
+
+router.get(
+    '/:id',
+    [param('id').isMongoId().withMessage('Invalid meeting ObjectID')],
+    meetingCtrl.getMeeting
+);
+
+export default router;
+
+-------------------------
+
+
+./routes/auth.ts:
+-------------------------
+import express, {Request, Response} from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import {findUserByEmail, findUserById, createUser} from '../models/user';
+
+const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
+
+// -----------------------------
+// Register
+// -----------------------------
+router.post('/register', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const {name, email, password} = req.body;
+
+        // Basic validation
+        if (!name || !email || !password) {
+            res.status(400).json({error: 'All fields are required'});
+            return;
+        }
+
+        // Check if user already exists
+        const existingUser = await findUserByEmail(email);
+        if (existingUser) {
+            res.status(400).json({error: 'User already exists'});
+            return;
+        }
+
+        // Create user (hashed internally)
+        const newUser = await createUser(name, email, password);
+
+        // Create JWT token
+        const token = jwt.sign({id: newUser.id}, JWT_SECRET, {expiresIn: '1h'});
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            token,
+            user: {
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email
+            }
+        });
+    } catch (error: any) {
+        console.error('Register error:', error);
+
+        // Duplicate‐email error code from Mongo
+        if (error.code === 11000) {
+            res.status(400).json({error: 'User already exists'});
+            return;
+        }
+
+        res.status(500).json({error: 'Server error'});
+    }
+});
+
+// -----------------------------
+// Login
+// -----------------------------
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const {email, password} = req.body;
+
+        if (!email || !password) {
+            res.status(400).json({error: 'All fields are required'});
+            return;
+        }
+
+        const user = await findUserByEmail(email);
+        if (!user) {
+            res.status(400).json({error: 'Invalid credentials'});
+            return;
+        }
+
+        // Compare plaintext password with stored hash
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            res.status(400).json({error: 'Invalid credentials'});
+            return;
+        }
+
+        // Issue JWT
+        const token = jwt.sign({id: user.id}, JWT_SECRET, {expiresIn: '1h'});
+
+        res.json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
+        });
+    } catch (error: any) {
+        console.error('Login error:', error);
+        res.status(500).json({error: 'Server error'});
+    }
+});
+
+// -----------------------------
+// Get current user (requires x-auth-token header)
+// -----------------------------
+router.get('/me', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const token = req.header('x-auth-token');
+        if (!token) {
+            res.status(401).json({error: 'No token provided'});
+            return;
+        }
+
+        let decoded: any;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        } catch {
+            res.status(401).json({error: 'Invalid token'});
+            return;
+        }
+
+        const user = await findUserById(decoded.id);
+        if (!user) {
+            res.status(404).json({error: 'User not found'});
+            return;
+        }
+
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email
+        });
+    } catch (error: any) {
+        console.error('Get user error:', error);
+        res.status(500).json({error: 'Server error'});
+    }
+});
+
+router.get('/user/:userId', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.params.userId;
+        const user = await findUserById(userId);
+        if (!user) {
+            res.status(404).json({error: 'User not found'});
+            return;
+        }
+
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email
+        });
+    } catch (error: any) {
+        console.error('Get user error:', error);
+        res.status(500).json({error: 'Server error'});
+    }
+})
+
+export default router;
+
+-------------------------
+
+
+./routes/options.ts:
+-------------------------
+import { Router } from 'express';
+import { body, param } from 'express-validator';
+import * as optionCtrl from '../controllers/optionCtrl';
+
+const router = Router();
+
+// Create a new slot under meeting {meetingId}
+router.post(
+    '/:meetingId/options',
+    [
+        param('meetingId').isMongoId().withMessage('Invalid meeting ObjectID'),
+        body('date').isISO8601(),
+        body('hour').isInt({ min: 0, max: 23 })
+    ],
+    optionCtrl.addOption
+);
+
+// List all slots for a meeting
+router.get(
+    '/:meetingId/options',
+    [param('meetingId').isMongoId().withMessage('Invalid meeting ObjectID')],
+    optionCtrl.listOptions
+);
+
+// Get details of a single slot by optionId
+router.get(
+    '/options/:optionId',
+    [param('optionId').isMongoId().withMessage('Invalid option ObjectID')],
+    optionCtrl.getOptionById
+);
+
+// Delete one slot (and its votes)
+router.delete(
+    '/:meetingId/options/:optionId',
+    [
+        param('meetingId').isMongoId().withMessage('Invalid meeting ObjectID'),
+        param('optionId').isMongoId().withMessage('Invalid option ObjectID')
+    ],
+    optionCtrl.deleteOption
+);
+
+export default router;
+
+-------------------------
+
+
+./services/meetingService.ts:
+-------------------------
+import Meeting, {IMeetingDocument} from '../models/meeting';
+import TimeOption, {ITimeOptionDocument} from '../models/timeOption';
+import Vote, {IVoteDocument} from '../models/vote';
+import {findUserById} from "../models/user";
+
+/** Create a new meeting (caller must supply a valid ownerId) */
+export async function createMeeting(
+    title: string,
+    ownerId: string,
+    dateFrom: string,
+    dateTo: string
+): Promise<IMeetingDocument> {
+    const meeting = new Meeting({title, ownerId, dateFrom, dateTo});
+    return meeting.save();
+}
+
+/** Retrieve a meeting by its ID */
+export async function getMeetingById(meetingId: string): Promise<IMeetingDocument | null> {
+    return Meeting.findById(meetingId).exec();
+}
+
+/** GET ALL MEETINGS for a given ownerId */
+export async function getMeetingsByOwner(
+    ownerId: string
+): Promise<IMeetingDocument[]> {
+    return Meeting.find({ownerId}).exec();
+}
+
+/** List all time‐options (slots) for a given meeting */
+export async function getOptionsByMeeting(meetingId: string): Promise<ITimeOptionDocument[]> {
+    return TimeOption.find({meetingId}).exec();
+}
+
+/** Get a single TimeOption by its ID */
+export async function getOptionById(optionId: string): Promise<ITimeOptionDocument | null> {
+    return TimeOption.findById(optionId).exec();
+}
+
+/** Get vote‐counts grouped by optionId (Map<optionId → count>) for an entire meeting */
+export async function getVoteCountsByOption(meetingId: string): Promise<Map<string, number>> {
+    const raw = await Vote.aggregate([
+        {$match: {meetingId}},
+        {$group: {_id: '$optionId', count: {$sum: 1}}}
+    ]);
+    const m = new Map<string, number>();
+    raw.forEach((r: { _id: string; count: number }) => {
+        m.set(r._id, r.count);
+    });
+    return m;
+}
+
+/** Add a time‐slot to a meeting, ensuring it falls within [dateFrom, dateTo] */
+export async function addTimeOption(
+    meetingId: string,
+    date: string,
+    hour: number
+): Promise<ITimeOptionDocument> {
+    const meeting = await Meeting.findById(meetingId).exec();
+    if (!meeting) throw new Error('Meeting not found');
+
+    const optionDate = new Date(date);
+    const start = new Date(meeting.dateFrom);
+    const end = new Date(meeting.dateTo);
+
+    if (optionDate < start || optionDate > end) {
+        throw new Error(
+            `Option date ${date} is outside meeting range (${meeting.dateFrom} to ${meeting.dateTo})`
+        );
+    }
+
+    // Check if a slot for this meeting/date/hour already exists
+    const existing = await TimeOption.findOne({meetingId, date, hour}).exec();
+    if (existing) {
+        throw new Error(`Slot for ${date} at hour ${hour} already exists`);
+    }
+
+    const slot = new TimeOption({meetingId, date, hour});
+    return slot.save();
+}
+
+/** Delete a slot and all its associated votes */
+export async function deleteTimeOption(
+    meetingId: string,
+    optionId: string
+): Promise<void> {
+    // Verify the slot belongs to this meeting
+    const slot = await TimeOption.findById(optionId).exec();
+    if (!slot || slot.meetingId !== meetingId) {
+        throw new Error('Option not found in this meeting');
+    }
+
+    await TimeOption.findByIdAndDelete(optionId).exec();
+    await Vote.deleteMany({meetingId, optionId}).exec();
+}
+
+/** Cast (or “switch”) a vote on a slot, enforcing one vote per user per meeting */
+export async function castVoteOnOption(
+    optionId: string,
+    userId: string
+): Promise<IVoteDocument> {
+    // 1. Fetch the slot to confirm it exists (and get its meetingId)
+    const slot = await TimeOption.findById(optionId).exec();
+    if (!slot) throw new Error('Option not found');
+
+    const meetingId = slot.meetingId;
+
+    // 2. Check if this exact user already voted on *this* same option
+    const duplicate = await Vote.findOne({meetingId, optionId, userId}).exec();
+    if (duplicate) {
+        throw new Error('You have already voted for this option');
+    }
+
+    // 3. Save the new vote
+    const vote = new Vote({meetingId, optionId, userId});
+    return vote.save();
+}
+
+/** List all Vote documents for a given slot (option) */
+export async function getVotesByOption(optionId: string): Promise<IVoteDocument[]> {
+    return Vote.find({optionId}).exec();
+}
+
+export async function getVotesByOptionWithUserInformation(optionId: string) {
+    const votes = await getVotesByOption(optionId);
+
+    const enriched = await Promise.all(
+        votes.map(async (v) => {
+            const user = await findUserById(v.userId);
+            return {
+                voteId: v.id,
+                user: user
+                    ? {id: user.id, name: user.name, email: user.email}
+                    : {id: v.userId, name: null, email: null},
+                votedAt: v.votedAt
+            };
+        })
+    );
+    return enriched;
+}
+
+/** Delete a single vote by its ID */
+export async function deleteVoteById(voteId: string): Promise<void> {
+    await Vote.findByIdAndDelete(voteId).exec();
+}
+
+-------------------------
+

@@ -3,7 +3,15 @@ import {validationResult} from 'express-validator';
 import * as meetingService from '../services/meetingService';
 import {findUserById} from "../models/user";
 
-/** Cast (or switch) a vote on a given slot */
+/**
+ * Cast or switch a vote on a given time‐slot.
+ *
+ * @param[in]  req  Express request (param `optionId`, authenticated `userId`).
+ * @param[in]  res  Express response with created vote details.
+ * @return           void
+ *
+ * @throws 400 on validation error or business‐logic error.
+ */
 export async function castVoteOnOption(req: Request, res: Response): Promise<void> {
     const optionId = req.params.optionId;
     const errors = validationResult(req);
@@ -29,7 +37,13 @@ export async function castVoteOnOption(req: Request, res: Response): Promise<voi
     }
 }
 
-/** List all votes for a given slot */
+/**
+ * List all votes for a given time‐slot.
+ *
+ * @param[in]  req  Express request (param `optionId`).
+ * @param[in]  res  Express response with array of votes.
+ * @return           void
+ */
 export async function listVotesByOption(req: Request, res: Response): Promise<void> {
     const optionId = req.params.optionId;
 
@@ -38,7 +52,15 @@ export async function listVotesByOption(req: Request, res: Response): Promise<vo
     res.json(votes);
 }
 
-/** Delete a single vote by ID */
+/**
+ * Delete one vote by its ID (if it belongs to the slot).
+ *
+ * @param[in]  req  Express request (params `voteId`, `optionId`).
+ * @param[in]  res  Express response (204 on success).
+ * @return           void
+ *
+ * @throws 404 if vote not found under that option.
+ */
 export async function deleteVote(req: Request, res: Response): Promise<void> {
     const {voteId, optionId} = req.params;
 

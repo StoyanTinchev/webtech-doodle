@@ -69,6 +69,12 @@ export default UserModel;
 // Helper functions to be used in routes/auth.ts
 // ----------------------------------------------------------------------------
 
+/**
+ * Find a user by their email address.
+ *
+ * @param[in]  email  Email to look up.
+ * @return            Promise resolving to the user document or null.
+ */
 export async function findUserByEmail(
     email: string
 ): Promise<IUserDocument | null> {
@@ -80,6 +86,12 @@ export async function findUserByEmail(
     }
 }
 
+/**
+ * Find a user by their MongoDB ObjectID.
+ *
+ * @param[in]  id  User’s ObjectID.
+ * @return          Promise resolving to the user document or null.
+ */
 export async function findUserById(
     id: string
 ): Promise<IUserDocument | null> {
@@ -91,6 +103,16 @@ export async function findUserById(
     }
 }
 
+/**
+ * Create a new user with hashed password.
+ *
+ * @param[in]  name           User’s full name.
+ * @param[in]  email          User’s email (must be unique).
+ * @param[in]  plainPassword  Plaintext password to hash.
+ * @return                    Promise resolving to the saved user document.
+ *
+ * @throws                   Errors on DB failure or hashing issues.
+ */
 export async function createUser(
     name: string,
     email: string,

@@ -2,6 +2,14 @@ import {Request, Response} from 'express';
 import {validationResult} from 'express-validator';
 import * as meetingService from '../services/meetingService';
 
+/**
+ *  Create a new meeting.
+ *         Validates body; on success calls service and returns 201.
+ *
+ * @param[in]  req  Express request (expects title, ownerId, dateFrom, dateTo).
+ * @param[in]  res  Express response.
+ * @return           void
+ */
 export async function createMeeting(
     req: Request,
     res: Response
@@ -21,7 +29,13 @@ export async function createMeeting(
     }
 }
 
-/** Get all meetings where ownerId = :userId */
+/**
+ *  List all meetings owned by a given user.
+ *
+ * @param[in]  req  Express request (expects param `userId`).
+ * @param[in]  res  Express response with array of meetings.
+ * @return           void
+ */
 export async function getMeetingsByUser(
     req: Request,
     res: Response
@@ -36,7 +50,15 @@ export async function getMeetingsByUser(
     }
 }
 
-// ?includeVotes=ture
+/**
+ *  Retrieve one meeting (with slots and optional votes).
+ *
+ * @param[in]  req  Express request (param `id`, optional query `includeVotes`).
+ * @param[in]  res  Express response with full meeting payload.
+ * @return           void
+ *
+ * @throws 404 if meeting not found.
+ */
 export async function getMeeting(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.id;
 

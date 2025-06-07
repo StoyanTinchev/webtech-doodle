@@ -2,7 +2,15 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as meetingService from '../services/meetingService';
 
-/** Add a new time‐slot under a given meeting */
+/**
+ * Add a new time‐slot under a given meeting.
+ *
+ * @param[in]  req  Express request (param `meetingId`, body `date`, `hour`).
+ * @param[in]  res  Express response with created option.
+ * @return           void
+ *
+ * @throws 400 on validation or business error.
+ */
 export async function addOption(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.meetingId;
     const errors = validationResult(req);
@@ -29,7 +37,13 @@ export async function addOption(req: Request, res: Response): Promise<void> {
     }
 }
 
-/** List all slots for a meeting (each with voteCount) */
+/**
+ * List all time‐slots for a meeting (each with vote counts).
+ *
+ * @param[in]  req  Express request (param `meetingId`).
+ * @param[in]  res  Express response with array of options.
+ * @return           void
+ */
 export async function listOptions(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.meetingId;
 
@@ -51,7 +65,15 @@ export async function listOptions(req: Request, res: Response): Promise<void> {
     res.json(result);
 }
 
-/** Get a single slot by its ID (with voteCount + links) */
+/**
+ * Get one time‐slot by ID (with voteCount and links).
+ *
+ * @param[in]  req  Express request (param `optionId`).
+ * @param[in]  res  Express response with option details.
+ * @return           void
+ *
+ * @throws 404 if option not found.
+ */
 export async function getOptionById(req: Request, res: Response): Promise<void> {
     const optionId = req.params.optionId;
 
@@ -78,7 +100,15 @@ export async function getOptionById(req: Request, res: Response): Promise<void> 
     });
 }
 
-/** Delete one slot (and all its votes) */
+/**
+ * Delete a time‐slot (and all its votes).
+ *
+ * @param[in]  req  Express request (params `meetingId`, `optionId`).
+ * @param[in]  res  Express response (204 on success).
+ * @return           void
+ *
+ * @throws 400 on validation or business error.
+ */
 export async function deleteOption(req: Request, res: Response): Promise<void> {
     const meetingId = req.params.meetingId;
     const optionId = req.params.optionId;
