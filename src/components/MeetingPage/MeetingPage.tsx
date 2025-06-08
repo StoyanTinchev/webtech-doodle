@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { MeetingWithVotesSummary, VoteSummary } from "../../interfaces";
 import VotingOptionsList from "../VotingOptionsList/VotingOptionsList";
@@ -27,7 +27,7 @@ const MeetingPage: React.FC = () => {
     });
   });
 
-  const fetchMeeting = async () => {
+  const fetchMeeting = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
@@ -43,11 +43,11 @@ const MeetingPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchMeeting();
-  }, [id]);
+  }, [fetchMeeting]);
 
   const handleAddOptionClick = () => {
     setAddingOption(true);
