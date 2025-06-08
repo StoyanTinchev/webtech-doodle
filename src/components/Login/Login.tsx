@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import React, {useState, useEffect} from "react";
+import {Link, useLocation, useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/AuthContext";
 import "./Login.css";
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const { login, isAuthenticated, authError, clearError } = useAuth();
+    const {login, isAuthenticated, authError, clearError} = useAuth();
     const [credentials, setCredentials] = useState({
         email: "",
         password: ""
     });
     const [loading, setLoading] = useState(false);
+    const location = useLocation();
 
+    const from = (location.state as any)?.from?.pathname || "/dashboard";
     useEffect(() => {
         if (isAuthenticated) {
-            navigate("/dashboard");
+            navigate(from, {replace: true});
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, navigate, from]);
 
     // Clear errors when component mounts (only once)
     useEffect(() => {
@@ -30,7 +32,7 @@ const Login: React.FC = () => {
         if (authError && clearError) {
             clearError();
         }
-        
+
         setCredentials({
             ...credentials,
             [e.target.name]: e.target.value
